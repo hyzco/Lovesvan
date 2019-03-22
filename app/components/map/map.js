@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 import { styles,mapStyle } from './style';
 import { Actions } from 'react-native-router-flux';
 import { Constants, MapView } from "expo";
-
-
+import firebaseService from '@firebase/app';
+import FetchMarker from './FetchData';
 
 
 class Map extends React.Component {
@@ -13,42 +13,27 @@ class Map extends React.Component {
       region : null,
       errorMessage : null,
            latitude: 37.78825,
-            longitude: -122.4324 
-            
+            longitude: -122.4324, 
+      uid: null,
       };
 
-      componentDidMount(){
-        const {longitude,latitude} = this.props;
-        this.updateLocationChange(latitude,longitude);
 
-        this.getMoviesFromApiAsync();
+      componentDidMount(){
+    var user = firebaseService.auth().currentUser;
+        firebaseService.database().ref('/Location/' + user.uid).on('value', (snapshot) => {
+          const userObj = snapshot.val();
+          this.updateLocationChange(userObj.latitude,userObj.longitude);
+        });
       }
 
       updateLocationChange = (_lat,_long) => {
         this.setState({
-          latitude:_lat,
-          longitude:_long,
+          latitude:_lat,//+0.00100,
+          longitude:_long,//+0.0010,
         });
        }
 
-
-        getMoviesFromApiAsync() {
-          return fetch('https://facebook.github.io/react-native/movies.json')
-          .then((response) => response.json())
-          .then((responseJson) => {
-    
-            this.setState({
-              dataSource: responseJson.movies,
-            }, function(){
-    
-            });
-    
-          })
-          .catch((error) =>{
-            console.error(error);
-          });
-      }
-
+     
 
       render() {
         const {
@@ -60,8 +45,10 @@ class Map extends React.Component {
    
         return (
         <View style={styles.container}>
+        
           <MapView
-            style={styles.map}
+        
+        style={styles.map}
             region={{
               latitude : this.state.latitude,
               longitude: this.state.longitude,
@@ -75,17 +62,19 @@ class Map extends React.Component {
                 }}
                 title={displayName}
                 description={email}/>  
+      
+      {/* fetch datadan veya redux üzerinden mark locationları al*/}  
            </MapView>
          
          
-      {/*     
-        <FlatList
+         
+    {/*  <FlatList
           data={this.state.dataSource}
-          renderItem={({item}) => <Text>{item.title}, {item.releaseYear}</Text>}
+          renderItem={({item}) => <Text>{item.title}, {item.latitude}</Text>}
           keyExtractor={({id}, index) => id}
 
         />
-      */}
+    */}
 
           </View>
 

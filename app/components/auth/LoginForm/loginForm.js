@@ -8,7 +8,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Actions } from 'react-native-router-flux';
 import { loginUser, restoreSession } from './../../../actions/session/actions';
 import { Location, Permissions } from "expo";
-import { setCurrentLocation } from '../../../actions/maps/actions';
+import { setCurrentLocation,getMarkLocation } from '../../../actions/maps/actions';
 
 const FIREBASE_LOGO = require('../../../../assets/icons/firebase.png');
 
@@ -84,6 +84,7 @@ const mapDispatchToProps = {
   login: loginUser,
   restore: restoreSession,
   setCurrent:setCurrentLocation,
+  getMark:getMarkLocation,
 };
 
 export default connect(
