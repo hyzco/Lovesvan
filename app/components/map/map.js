@@ -44,11 +44,10 @@ class Map extends React.Component {
         } = this.props;
         
      
-    
+    console.log("furkan");
 
         return (
       <View style={styles.container}>
-     
         <MapView
         style={styles.map}
             region={{
@@ -57,7 +56,6 @@ class Map extends React.Component {
               longitudeDelta:0.0421,
               latitudeDelta:0.092,
             }}>
-          
                   {
                     this.props.markLocation.map((mark,i) => {
                       return(   
