@@ -5,7 +5,6 @@ import { styles,mapStyle } from './style';
 import { Actions } from 'react-native-router-flux';
 import { Constants, MapView } from "expo";
 import firebaseService from '@firebase/app';
-import FetchMarker from './FetchData';
 
 
 class Map extends React.Component {
@@ -14,7 +13,6 @@ class Map extends React.Component {
       errorMessage : null,
            latitude: 37.78825,
             longitude: -122.4324, 
-      uid: null,
       };
 
 
@@ -33,21 +31,25 @@ class Map extends React.Component {
         });
        }
 
-     
+       renderMark(){
+                 
+       }
 
       render() {
         const {
           user: { displayName,email,photoURL,uid },
           longitude,
           latitude,
+          markLocation
         } = this.props;
+        
+     
+    
 
-   
         return (
-        <View style={styles.container}>
-        
-          <MapView
-        
+      <View style={styles.container}>
+     
+        <MapView
         style={styles.map}
             region={{
               latitude : this.state.latitude,
@@ -55,48 +57,44 @@ class Map extends React.Component {
               longitudeDelta:0.0421,
               latitudeDelta:0.092,
             }}>
-             <MapView.Marker
-                coordinate={{
-                  latitude : this.state.latitude,
-                  longitude: this.state.longitude,
-                }}
-                title={displayName}
-                description={email}/>  
-      
+          
+                  {
+                    this.props.markLocation.map((mark,i) => {
+                      return(   
+                        <MapView.Marker
+                        coordinate={{
+                          latitude : mark.m_latitude,
+                          longitude: mark.m_longitude,
+                        }}
+                        key = {mark.m_uid}
+                        title={mark.m_uid}
+                        description={mark.m_uid}/>
+                      );
+                      console.log(mark.m_uid);
+                       })
+                  }
       {/* fetch datadan veya redux üzerinden mark locationları al*/}  
-           </MapView>
-         
-         
-         
-    {/*  <FlatList
-          data={this.state.dataSource}
-          renderItem={({item}) => <Text>{item.title}, {item.latitude}</Text>}
-          keyExtractor={({id}, index) => id}
-
-        />
-    */}
-
+           </MapView>         
           </View>
-
-
         );
       }
 }
-const mapStateToProps = ({ routes,sessionReducer,mapsReducer:{location,error} }) => ({
-  routes: routes,
-  user: sessionReducer.user,
-  longitude:location.coords.longitude,
-  latitude : location.coords.latitude,
-  error : error
-});
 
-const mapDispatchToProps = {
+            const mapStateToProps = ({ routes,sessionReducer,mapsReducer:{location,error,markSuccess}}) => ({
+              routes: routes,
+              user: sessionReducer.user,
+              longitude:location.coords.longitude,
+              latitude : location.coords.latitude,
+              error : error,
+              markLocation:markSuccess
+            });
 
-};
+            const mapDispatchToProps = {
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Map);
+            };
 
+            export default connect(
+              mapStateToProps,
+              mapDispatchToProps
+            )(Map);
 

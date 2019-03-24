@@ -8,8 +8,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Actions } from 'react-native-router-flux';
 import { loginUser, restoreSession } from './../../../actions/session/actions';
 import { Location, Permissions } from "expo";
-import { setCurrentLocation,getMarkLocation } from '../../../actions/maps/actions';
-
+import { setCurrentLocation,AddMark } from '../../../actions/maps/actions';
+import firebase from '@firebase/app';
 const FIREBASE_LOGO = require('../../../../assets/icons/firebase.png');
 
 class LoginFormComponent extends Component {
@@ -21,6 +21,7 @@ class LoginFormComponent extends Component {
   componentDidMount() {
     this.props.restore();
    var location = this._getLocationAsync();
+   this._getMarksAsync();
   }
 
   
@@ -41,6 +42,22 @@ class LoginFormComponent extends Component {
     }
   }
 
+  _getMarksAsync = async ()=>{
+        var arrMarker = [];
+        var ref2 = firebase.database().ref("Location/");
+        ref2.once("value").then(snapshot => {
+      
+      snapshot.forEach(function(snapshot1) {
+            arrMarker.push({
+            m_uid:snapshot1.key,
+            m_longitude:snapshot1.val().longitude,
+            m_latitude:snapshot1.val().latitude
+          });
+      })
+      this.props.setMark(arrMarker);
+    })
+  }
+  
 
   componentDidUpdate(prevProps) {
     const { error, logged } = this.props;
@@ -84,7 +101,7 @@ const mapDispatchToProps = {
   login: loginUser,
   restore: restoreSession,
   setCurrent:setCurrentLocation,
-  getMark:getMarkLocation,
+  setMark : AddMark,
 };
 
 export default connect(

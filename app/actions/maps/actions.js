@@ -1,6 +1,17 @@
 import * as types from './actionTypes';
 import firebaseService from './../../enviroments/firebase';
 
+
+
+
+export function AddMark (item){
+	return(dispatch)=>{
+		dispatch(markSuccess(item));
+	}
+}
+
+
+
 export function setCurrentLocation (getLocation){
 	return(dispatch)=>{	
 //hıza göre işlemler yaptırt <3
@@ -20,12 +31,14 @@ export function setCurrentLocation (getLocation){
 	};
 	  
 export function errorLocation(error){
-
 	return(dispatch)=>{
 		dispatch(locationError(error));
-		console.log("action",error);
 	}
 }
+   const markSuccess = (markSuccess)=>({
+		type: types.MARK_SUCCESS,
+		markSuccess,
+	})
 
 	const locationSuccess = (location) =>({
 		type:types.SUCCESS_LOCATION,
