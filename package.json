@@ -26,15 +26,12 @@
     "react-navigation": "^3.3.2",
     "react-redux": "^6.0.1",
     "redux": "^4.0.1",
-    "redux-devtools": "^3.5.0",
-    "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "relative-date": "^1.1.3"
   },
   "devDependencies": {
     "babel-preset-expo": "^5.0.0",
-    "react-devtools": "^3.6.0",
-    "react-native-debugger-open": "^0.3.18"
+    "react-devtools": "^3.6.0"
   },
   "private": true
 }

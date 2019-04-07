@@ -3,9 +3,10 @@ import { View, Button,Text,Platform,Image,FlatList } from 'react-native';
 import { connect } from 'react-redux';
 import { styles,mapStyle } from './style';
 import { Actions } from 'react-native-router-flux';
-import { Constants, MapView } from "expo";
-import firebaseService from '@firebase/app';
+import * as backgroundTask from '../../backgroundTask/map/backgroundTasks';
 
+import { Constants, MapView,Location,TaskManager } from "expo";
+import firebaseService from '@firebase/app';
 
 class Map extends React.Component {
     state = {
@@ -17,8 +18,8 @@ class Map extends React.Component {
 
 
       componentDidMount(){
-    var user = firebaseService.auth().currentUser;
-        firebaseService.database().ref('/Location/' + user.uid).on('value', (snapshot) => {
+        var user = firebaseService.auth().currentUser;
+        firebaseService.database().ref('/Location/'+user.uid).on('value', (snapshot) => {
           const userObj = snapshot.val();
           this.updateLocationChange(userObj.latitude,userObj.longitude);
         });
@@ -31,60 +32,62 @@ class Map extends React.Component {
         });
        }
 
-       renderMark(){
-                 
-       }
-
       render() {
         const {
           user: { displayName,email,photoURL,uid },
-          longitude,
-          latitude,
           markLocation
         } = this.props;
         
-     
-    console.log("furkan");
 
         return (
       <View style={styles.container}>
         <MapView
-        style={styles.map}
-            region={{
-              latitude : this.state.latitude,
-              longitude: this.state.longitude,
-              longitudeDelta:0.0421,
-              latitudeDelta:0.092,
+          style={styles.map}
+              region={{
+                latitude : this.state.latitude,
+                longitude: this.state.longitude,
+                longitudeDelta:0.0421,
+                latitudeDelta:0.092,
             }}>
+            
+            <MapView.Marker
+               coordinate={{
+                 latitude : this.state.latitude,
+                 longitude: this.state.longitude,
+                           }}
+                   title={"sen"}
+                   description={"sen"}/>
+        
                   {
                     this.props.markLocation.map((mark,i) => {
-                      return(   
-                        <MapView.Marker
+                      if(mark.m_uid != {uid}){
+                      return(         
+                      <MapView.Marker
                         coordinate={{
                           latitude : mark.m_latitude,
                           longitude: mark.m_longitude,
                         }}
-                        key = {mark.m_uid}
-                        title={mark.m_uid}
-                        description={mark.m_uid}/>
-                      );
-                      console.log(mark.m_uid);
-                       })
+                              key = {mark.m_uid}
+                              title={mark.m_uid}
+                              description={mark.m_uid}/>
+                          );
+                        }
+                    })   
                   }
-      {/* fetch datadan veya redux üzerinden mark locationları al*/}  
+
            </MapView>         
           </View>
         );
       }
 }
 
-            const mapStateToProps = ({ routes,sessionReducer,mapsReducer:{location,error,markSuccess}}) => ({
+
+            const mapStateToProps = ({ routes,sessionReducer,mapsReducer:{error,markSuccess}}) => ({
               routes: routes,
               user: sessionReducer.user,
-              longitude:location.coords.longitude,
-              latitude : location.coords.latitude,
               error : error,
-              markLocation:markSuccess
+              markLocation:markSuccess,
+             
             });
 
             const mapDispatchToProps = {

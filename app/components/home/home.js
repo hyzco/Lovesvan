@@ -6,11 +6,14 @@ import { styles } from './styles';
 import { Actions } from 'react-native-router-flux';
 import { LoadingIndicator } from '../loadingIndicator/loadingIndicator';
 import { logoutUser } from '../../actions/session/actions';
+import {_unRegisterAllTasksAsync} from '../../backgroundTask/map/backgroundTasks';
 
+import {TaskManager} from 'expo';
 class Home extends Component {
   logout = () => {
     this.props.logout();
     setTimeout(() => {
+      _unRegisterAllTasksAsync();
       Actions.reset('login');
     }, 100);
   };

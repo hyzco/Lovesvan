@@ -1,45 +1,88 @@
 import React, { Component } from 'react';
-import { View, Alert, Image, Button } from 'react-native';
-import { connect } from 'react-redux';
+import { Location, Permissions,TaskManager } from "expo";
+//Form Components
+import { View, Alert, Image, Button,AsyncStorage } from 'react-native';
 import { BasicFormComponent } from '../BasicForm/basicForm';
 import { LoadingIndicator } from '../../loadingIndicator/loadingIndicator';
 import { styles } from '../BasicForm/styles';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Actions } from 'react-native-router-flux';
+//Actions
+import { setCurrentLocation,AddMark, getReverseGeoCode } from '../../../actions/maps/actions';
 import { loginUser, restoreSession } from './../../../actions/session/actions';
-import { Location, Permissions } from "expo";
-import { setCurrentLocation,AddMark } from '../../../actions/maps/actions';
+//import {locationFetcherBackground,markFetcherBackground,backgroundFetcherState} from '../../../actions/maps/backgroundFetcher'
+import {_getFetchBackgroundLocationAsync} from '../../../backgroundTask/map/backgroundTasks';
+//Redux & Router
+import { connect } from 'react-redux';
+import { Actions } from 'react-native-router-flux';
+//Database
 import firebase from '@firebase/app';
+//Logo Const
 const FIREBASE_LOGO = require('../../../../assets/icons/firebase.png');
 
-class LoginFormComponent extends Component {
-  state = {
-    errorMessage : null,
-    location:{},
-    };
 
-  componentDidMount() {
-    this.props.restore();
-   var location = this._getLocationAsync();
-   this._getMarksAsync();
+
+
+class LoginFormComponent extends Component {
+  
+  
+
+  constructor(props){
+    super(props);
+    this.state ={
+       isLoading: false,
+       geoInfo:{},
+      }
   }
 
+
+  componentDidMount() {
+    this.props.restore();   
+    const { error, logged } = this.props;
+    this._geoInfo();
+  }
+
+  componentDidUpdate = async (prevProps)=>{
+  const { 
+    error, logged
+  } = this.props;
   
+  if (!prevProps.error && error) Alert.alert('error', error);  
+  if (logged) {
+
+    this._getLocationAsync();
+    this._getMarksAsync();
+  
+    Actions.reset('home')
+  };
+}
+
+
+  _geoInfo(){
+    return fetch('https://ipapi.co/json')
+      .then((response) => response.json())
+      .then((responseJson) => {
+          this.state.geoInfo=responseJson;
+      }).catch((error) => {
+          console.error(error);
+      });
+    } 
+
   _getLocationAsync = async ()=>{
-    let { status } = await Permissions.askAsync(Permissions.LOCATION);
-  
-    if (status !== 'granted') {
-      this.errorMessage = 'Permission to access location was denied';
-    }
- 
-    let location =  await Location.getCurrentPositionAsync({enableHighAccuracy:true})
-    .then((location)=>{
-      this.location = ( JSON.stringify(location), location);
-    })
-   
-    if(this.location){
-      this.props.setCurrent(this.location);
-    }
+      const {user:{uid}} = this.props;
+      
+      let { status } = await Permissions.askAsync(Permissions.LOCATION); 
+      if (status !== 'granted') {
+        this.errorMessage = 'Permission to access location was denied';
+      }
+      let location =  await Location.getCurrentPositionAsync({enableHighAccuracy:true})
+      .then((location)=>{
+        this.location = ( JSON.stringify(location), location);
+      })
+
+        if(this.location && this.props.logged){
+          this.props.setCurrent(this.location,this.state.geoInfo);
+          _getFetchBackgroundLocationAsync(uid,this.state.geoInfo);
+        }
   }
 
   _getMarksAsync = async ()=>{
@@ -47,25 +90,19 @@ class LoginFormComponent extends Component {
         var ref2 = firebase.database().ref("Location/");
         ref2.once("value").then(snapshot => {
       
-      snapshot.forEach(function(snapshot1) {
+    snapshot.forEach(function(snapshot1) {  
             arrMarker.push({
-            m_uid:snapshot1.key,
-            m_longitude:snapshot1.val().longitude,
-            m_latitude:snapshot1.val().latitude
-          });
+              m_uid:snapshot1.key,
+              m_longitude:snapshot1.val().longitude,
+              m_latitude:snapshot1.val().latitude
+            });
       })
       this.props.setMark(arrMarker);
     })
   }
   
 
-  componentDidUpdate(prevProps) {
-    const { error, logged } = this.props;
-    if (!prevProps.error && error) Alert.alert('error', error);
-    if (logged) {
-      Actions.reset('home')
-    };
-  }
+
 
   render() {
     const { login, loading } = this.props;

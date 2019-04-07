@@ -1,0 +1,1 @@
+export const taskLocationName = 'background-fetch-location';

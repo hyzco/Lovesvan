@@ -1,6 +1,6 @@
 import * as types from './actionTypes';
 import firebaseService from './../../enviroments/firebase';
-
+import {Location} from 'expo';
 
 
 
@@ -12,19 +12,23 @@ export function AddMark (item){
 
 
 
-export function setCurrentLocation (getLocation){
+export function setCurrentLocation (getLocation,geoInfo){
 	return(dispatch)=>{	
 //hıza göre işlemler yaptırt <3
+	
 		dispatch(locationSuccess(getLocation));
 
 		firebaseService.auth().onAuthStateChanged(user => {
-			if (user) {
-				firebaseService.database().ref("/Location/"+user.uid).set({
+			if (user) {	
+					firebaseService.database().ref("/Location/"+user.uid).set({
 					longitude:getLocation.coords.longitude,
 					latitude:getLocation.coords.latitude,
-				})
+					countryCode:geoInfo.country,
+					city:geoInfo.city,
+					})
+				
 			} else {
-			  console.log("error");
+			  console.log("errorSetCurrentAction");
 			}
 		  });
 		}
@@ -34,8 +38,14 @@ export function errorLocation(error){
 	return(dispatch)=>{
 		dispatch(locationError(error));
 	}
-}
-   const markSuccess = (markSuccess)=>({
+};
+	const reverseGeocodeSuccess =(objGeoReverse)=>({
+		type: types.SUCCESS_GEOREVERSE,
+		objGeoReverse,
+	});
+
+
+	const markSuccess = (markSuccess)=>({
 		type: types.MARK_SUCCESS,
 		markSuccess,
 	})

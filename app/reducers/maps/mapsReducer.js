@@ -5,6 +5,7 @@ const initialState = {
     location: {},
     markSuccess:[],
     error : null,
+    objGeoReverse:{},
   };
   
  
@@ -19,6 +20,10 @@ const initialState = {
         return { 
             ...state, location: action.location
          };
+      case types.SUCCESS_GEOREVERSE:
+      return{
+        ...state, objGeoReverse: action.objGeoReverse
+      };
       case types.FAILED_LOCATION:
         return { ...state, error: action.error };
       default:

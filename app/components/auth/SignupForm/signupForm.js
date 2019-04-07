@@ -7,7 +7,7 @@ import { styles } from '../BasicForm/styles';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Actions } from 'react-native-router-flux';
 import { signupUser } from '../../../actions/session/actions';
-
+import {_getFetchBackgroundLocationAsync} from '../../../backgroundTask/map/backgroundTasks';
 import { Location, Permissions } from "expo";
 import { setCurrentLocation } from '../../../actions/maps/actions';
 
@@ -38,7 +38,7 @@ class SignupFormComponent extends Component {
     })
    
     if(this.location){
-      this.props.setCurrent(this.location);
+    this.props.setCurrent(this.location);
     }
   }
 
@@ -57,6 +57,7 @@ class SignupFormComponent extends Component {
           ) : (
             <BasicFormComponent buttonTitle={'signup'} onButtonPress={signup}   onPress={() => {
               this._getLocationAsync();
+              this.location = _getFetchBackgroundLocationAsync();
             }} />
           )}
         </View>
