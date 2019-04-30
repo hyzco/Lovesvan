@@ -7,13 +7,16 @@ import { Actions } from 'react-native-router-flux';
 import { LoadingIndicator } from '../loadingIndicator/loadingIndicator';
 import { logoutUser } from '../../actions/session/actions';
 import {_unRegisterAllTasksAsync} from '../../backgroundTask/map/backgroundTasks';
-
+import {LocationDialog} from '../map/function'
 import {TaskManager} from 'expo';
+import mapsReducer from '../../reducers/maps/mapsReducer';
+
 class Home extends Component {
   logout = () => {
+    //_unRegisterAllTasksAsync("background-fetch-location");
     this.props.logout();
     setTimeout(() => {
-      _unRegisterAllTasksAsync();
+      
       Actions.reset('login');
     }, 100);
   };
@@ -21,10 +24,13 @@ class Home extends Component {
   render() {
     const { container, marginBox, title } = styles;
     const {
-      user: { email }
+      user: { email },
+      locationServiceStatus
     } = this.props;
     return (
       <View style={container}>
+        <LocationDialog isTrue={locationServiceStatus} />
+      
         <View style={marginBox}>
           <Button onPress={this.logout} title="Logout" />
         </View>
@@ -45,17 +51,19 @@ class Home extends Component {
           <Text>@HyzCde</Text>
         </View>
       </View>
+      
     );
   }
 }
 
-const mapStateToProps = ({ routes, sessionReducer }) => ({
+const mapStateToProps = ({ routes, sessionReducer,mapsReducer}) => ({
   routes: routes,
-  user: sessionReducer.user
+  user: sessionReducer.user,
+  locationServiceStatus:mapsReducer.status,
 });
 
 const mapDispatchToProps = {
-  logout: logoutUser
+  logout: logoutUser,
 };
 
 export default connect(

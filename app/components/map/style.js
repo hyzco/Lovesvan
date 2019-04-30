@@ -69,31 +69,12 @@ export const mapStyle =  [
 
 export const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  paragraph: {
-    margin: 24,
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#34495e',
-  },
-  image: {
-    width: 100,
-    height: 100,
-    marginBottom: 50
-  },
-  marginBox: {
-    margin: 10
-  },
-  title: {
-    fontSize: 24,
-    margin: 20
   },
   map: {
     ...StyleSheet.absoluteFillObject,
- },
+  },
   
 });

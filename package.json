@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@expo/samples": "^2.1.1",
+    "axios": "^0.18.0",
     "expo": "^32.0.0",
     "firebase": "^5.8.4",
     "haversine": "^1.1.1",
@@ -19,6 +20,7 @@
     "react-native-keyboard-aware-scroll-view": "^0.7.2",
     "react-native-location-switch": "^0.1.0",
     "react-native-maps": "^0.23.0",
+    "react-native-modal": "^9.0.0",
     "react-native-router-flux": "^4.0.5",
     "react-native-settings": "^0.1.1",
     "react-native-svg": "^9.2.4",

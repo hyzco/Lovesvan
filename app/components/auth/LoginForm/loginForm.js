@@ -7,18 +7,20 @@ import { LoadingIndicator } from '../../loadingIndicator/loadingIndicator';
 import { styles } from '../BasicForm/styles';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 //Actions
-import { setCurrentLocation,AddMark, getReverseGeoCode } from '../../../actions/maps/actions';
+import { setCurrentLocation,AddMark, getReverseGeoCode,setLocationServiceStatus } from '../../../actions/maps/actions';
 import { loginUser, restoreSession } from './../../../actions/session/actions';
 //import {locationFetcherBackground,markFetcherBackground,backgroundFetcherState} from '../../../actions/maps/backgroundFetcher'
 import {_getFetchBackgroundLocationAsync} from '../../../backgroundTask/map/backgroundTasks';
 //Redux & Router
 import { connect } from 'react-redux';
 import { Actions } from 'react-native-router-flux';
+//Functions
+import { LocationDialog } from '../../map/function';
+
 //Database
 import firebase from '@firebase/app';
 //Logo Const
 const FIREBASE_LOGO = require('../../../../assets/icons/firebase.png');
-
 
 
 
@@ -33,7 +35,6 @@ class LoginFormComponent extends Component {
        geoInfo:{},
       }
   }
-
 
   componentDidMount() {
     this.props.restore();   
@@ -68,21 +69,46 @@ class LoginFormComponent extends Component {
     } 
 
   _getLocationAsync = async ()=>{
-      const {user:{uid}} = this.props;
-      
+    this.props.locationServiceStatus(false);   
+    var statusService = new Promise(function(resolve,reject){
+      setTimeout(function(){
+        resolve(Location.hasServicesEnabledAsync());
+      },300);
+  });
+    var serviceLocationStatus = null;
+  statusService.then(function(value){   
+      serviceLocationStatus = value;
+  
+  });
+
+  
+    const {user:{uid}} = this.props;
+    let {isAvailable} = this.state;
+
+
       let { status } = await Permissions.askAsync(Permissions.LOCATION); 
       if (status !== 'granted') {
         this.errorMessage = 'Permission to access location was denied';
       }
-      let location =  await Location.getCurrentPositionAsync({enableHighAccuracy:true})
+      let location =  await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.BestForNavigation,
+      })
       .then((location)=>{
         this.location = ( JSON.stringify(location), location);
-      })
+      }).catch((error) => {
+        if(!serviceLocationStatus)
+        this.props.locationServiceStatus(true);
+      });
 
         if(this.location && this.props.logged){
           this.props.setCurrent(this.location,this.state.geoInfo);
-          _getFetchBackgroundLocationAsync(uid,this.state.geoInfo);
-        }
+          _getFetchBackgroundLocationAsync(uid,this.state.geoInfo); 
+
+      }
+   
+    
+     
+
   }
 
   _getMarksAsync = async ()=>{
@@ -107,8 +133,12 @@ class LoginFormComponent extends Component {
   render() {
     const { login, loading } = this.props;
     const { scrollView, imageBox, image, loginBox } = styles;
+   
+
     return (
+   
       <KeyboardAwareScrollView style={scrollView}>
+      
         <View style={imageBox}>
           <Image style={image} source={FIREBASE_LOGO} />
         </View>
@@ -119,7 +149,7 @@ class LoginFormComponent extends Component {
             <BasicFormComponent buttonTitle={'login'} onButtonPress={login} />
           )}
         </View>
-        <View>{loading ? null : <Button onPress={Actions.signup} title="Signup" />}</View>
+        <View>{loading ? null : <Button onPress={Actions.signup} title="Signup" />}</View> 
       </KeyboardAwareScrollView>
     );
   }
@@ -139,6 +169,7 @@ const mapDispatchToProps = {
   restore: restoreSession,
   setCurrent:setCurrentLocation,
   setMark : AddMark,
+  locationServiceStatus : setLocationServiceStatus,
 };
 
 export default connect(

@@ -5,12 +5,18 @@ const initialState = {
     location: {},
     markSuccess:[],
     error : null,
-    objGeoReverse:{},
+   // Inactive can use for ip services objGeoReverse:{},
+   status : null,
   };
   
  
   const mapsReducer = (state = initialState, action) => {
     switch (action.type) {
+      case types.LOCATION_SERVICE:
+      return{
+        ...state,
+        status: action.status
+      };
       case types.MARK_SUCCESS:
       return {
         ...state,
@@ -20,10 +26,10 @@ const initialState = {
         return { 
             ...state, location: action.location
          };
-      case types.SUCCESS_GEOREVERSE:
+     /* case types.SUCCESS_GEOREVERSE:
       return{
         ...state, objGeoReverse: action.objGeoReverse
-      };
+      };*/
       case types.FAILED_LOCATION:
         return { ...state, error: action.error };
       default:

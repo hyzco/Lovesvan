@@ -1,46 +1,59 @@
 import React, { Component } from 'react';
 import { Location, TaskManager } from 'expo';
 import * as types from '../taskTypes';
-
+import {LocationDialog} from '../../components/map/function'
 //FUNCTIONS
 
+let uid = null;
+let geoInfo = {};
 
-export async function _unRegisterAllTasksAsync(){
-    await TaskManager.unregisterAllTasksAsync();
-}
+
+/*export async function _unRegisterAllTasksAsync(taskName){
+              Location.stopLocationUpdatesAsync(types.taskLocationName);
+}*/
 
 export async function _getFetchBackgroundLocationAsync (uid,geoInfo){
+  var coords = null;
     await Location.startLocationUpdatesAsync(types.taskLocationName, {
-        accuracy: Location.Accuracy.Balanced,
+        accuracy: Location.Accuracy.BestForNavigation,
       });
-          TaskManager.defineTask(types.taskLocationName, async ({ data, error }) => {
-            if (error) {
-              // Error occurred - check `error.message` for more details.
-            }
-            if (data) {
-            const { locations } = data;
-            var coords = locations[0].coords;
-            fetch('http://192.168.0.10:8080/update/currentLocation', {
-              method: 'POST',
-              headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                uid: uid,
-                lat: coords.latitude,
-                long: coords.longitude,
-                city: geoInfo.city,
-                countryCode: geoInfo.country,
-              }),
-            });
-
-            }
-          });
+      this.uid = uid;
+      this.geoInfo = geoInfo;
   }
 
+  
+  TaskManager.defineTask(types.taskLocationName, async ({ data, error }) => {
+    if (error) {
+      // Error occurred - check `error.message` for more details.
+    }
+    if (data && this.uid != null && this.geoInfo != {}) {
 
-  //DEFINE TASKS
+    const { locations } = data;
+     coords = locations[0].coords;
+    if(this.uid !== null){
+      setTimeout(() => {
+        fetch('http://ffa1.lovesvan.com/update/currentLocation', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            uid: this.uid,
+            lat: coords.latitude,
+            long: coords.longitude,
+            city: this.geoInfo.city,
+            countryCode: this.geoInfo.country,
+          }),
+        });
+      }, 3000);
+  
+       }
+    }
+});
       
+     
+
+
     
 

@@ -14,34 +14,58 @@ import { setCurrentLocation } from '../../../actions/maps/actions';
 const FIREBASE_LOGO = require('../../../../assets/icons/firebase.png');
 
 class SignupFormComponent extends Component {
-  state = {
-    errorMessage : null,
-    location:{},
-    };
 
-
-
-  componentDidUpdate(prevProps) {
-    if (this.props.registered) Actions.reset('home'); 
+  constructor(props){
+    super(props);
+    this.state ={
+      errorMessage : null,
+      location:{},
+      geoInfo:{},
+      }
   }
 
-  _getLocationAsync = ()=>{
-    let { status } =  Permissions.askAsync(Permissions.LOCATION);
+  componentDidMount(){
+    this._geoInfo();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.registered) 
+    {
+      this._getLocationAsync();
+      Actions.reset('home');
+    } 
+  }
+
+  _getLocationAsync = async ()=>{
+    let { status } =  await Permissions.askAsync(Permissions.LOCATION);
   
     if (status !== 'granted') {
       this.errorMessage = 'Permission to access location was denied';
+    }else{
+      console.log("ok");
     }
  
-    let location =   Location.getCurrentPositionAsync({enableHighAccuracy:true})
+    let location =  await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.BestForNavigation,
+    })
     .then((location)=>{
       this.location = ( JSON.stringify(location), location);
     })
    
-    if(this.location){
-    this.props.setCurrent(this.location);
+    if(this.location||this.props.registered){
+    this.props.setCurrent(this.location,this.state.geoInfo);
     }
   }
 
+  _geoInfo(){
+    return fetch('https://ipapi.co/json')
+      .then((response) => response.json())
+      .then((responseJson) => {
+          this.state.geoInfo=responseJson;
+      }).catch((error) => {
+          console.error(error);
+      });
+    } 
 
   render() {
     const { signup, loading } = this.props;
