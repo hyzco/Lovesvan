@@ -22,8 +22,8 @@ export default class Routes extends React.Component {
       <Provider store={store}>
         <RouterRedux navigationBarStyle={styles.navBar} tintColor="#ffffff" titleStyle={styles.barButtonTextStyle}>
           <Scene key="root">
-            <Scene key="login" component={SessionContainer} title="Login" initial={true} />
-            <Scene key="signup" component={SignupContainer} title="Signup" />
+            <Scene hideNavBar={true} key="login" component={SessionContainer} title="Login" initial={true} />
+            <Scene hideNavBar={true} key="signup" component={SignupContainer} title="Signup" />
             <Scene key="home" component={HomeContainer} title="Home" />
             <Scene key="search" component={SearchContainer} title="Search" />
             <Scene key="counter" component={CounterContainer} title="Counter" />

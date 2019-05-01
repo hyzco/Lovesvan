@@ -40,6 +40,8 @@ export class BasicFormComponent extends Component {
           underlineColorAndroid={'transparent'}
         />
 
+
+
         <TouchableOpacity style={button} onPress={this.handleButtonPress}>
           <Text style={buttonTitle}>{this.props.buttonTitle}</Text>
         </TouchableOpacity>

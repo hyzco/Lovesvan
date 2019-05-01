@@ -16,7 +16,6 @@ export const restoreSession = () => dispatch => {
 
 export const loginUser = (email, password) => dispatch => {
   dispatch(sessionLoading());
-
   firebaseService
     .auth()
     .signInWithEmailAndPassword(email, password)
