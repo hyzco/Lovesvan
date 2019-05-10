@@ -1,10 +1,10 @@
-import * as types from '../../actions/counter/actionTypes';
+import * as types from '../../actions/profile/actionTypes';
 
 const initialState = {
   counter: 0
 };
 
-const counterReducer = (state = initialState, action) => {
+const profileReducer = (state = initialState, action) => {
   switch (action.type) {
     case types.INCREMENT:
       return { ...state, counter: state.counter + 1 };
@@ -19,4 +19,4 @@ const counterReducer = (state = initialState, action) => {
   }
 };
 
-export default counterReducer;
+export default profileReducer;

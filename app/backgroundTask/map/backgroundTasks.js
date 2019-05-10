@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Location, TaskManager } from 'expo';
 import * as types from '../taskTypes';
-import {LocationDialog} from '../../components/map/function'
 //FUNCTIONS
 
 let uid = null;
@@ -15,7 +14,7 @@ let geoInfo = {};
 export async function _getFetchBackgroundLocationAsync (uid,geoInfo){
   var coords = null;
     await Location.startLocationUpdatesAsync(types.taskLocationName, {
-        accuracy: Location.Accuracy.BestForNavigation,
+        accuracy: Location.Accuracy.HIGH,
       });
       this.uid = uid;
       this.geoInfo = geoInfo;

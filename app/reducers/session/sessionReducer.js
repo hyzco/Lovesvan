@@ -6,7 +6,8 @@ const initialState = {
   user: {},
   error: null,
   logged: null,
-  registered: null
+  registered: null,
+  matches :[],
 };
 
 const sessionReducer = (state = initialState, action) => {
@@ -23,7 +24,7 @@ const sessionReducer = (state = initialState, action) => {
         user: action.user,
         error: null,
         logged: true,
-        registered: null
+        registered: null,
       };
     case types.SIGNUP_SUCCESS:
       return {
@@ -33,7 +34,8 @@ const sessionReducer = (state = initialState, action) => {
         user: action.user,
         error: null,
         logged: null,
-        registered: true
+        registered: true,
+      //  matches : action.matches,
       };
     case types.SESSION_ERROR:
       return {
@@ -46,7 +48,19 @@ const sessionReducer = (state = initialState, action) => {
         registered: null
       };
     case types.SESSION_LOGOUT:
-      return initialState;
+      return {
+        ...state,
+        restoring: false,
+        loading: false,
+        error: action.error,
+        logged: null,
+        registered: null,
+      };
+    case types.MATCHES_SUCCESS:
+    return {
+      ...state,
+      matches : action.matches,
+    }
     default:
       return state;
   }

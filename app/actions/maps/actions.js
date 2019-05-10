@@ -15,7 +15,6 @@ export function AddMark (item){
 }
 
 
-
 export function setCurrentLocation (getLocation,geoInfo){
 	return(dispatch)=>{	
 //hıza göre işlemler yaptırt <3
@@ -43,11 +42,12 @@ export function setCurrentLocation (getLocation,geoInfo){
 					latitude:getLocation.coords.latitude,
 					countryCode:countryCode,
 					city:city,
-					})
-				
-			} else {
-			  console.log("errorSetCurrentAction");
-			}
+					}).then((data) =>{
+
+					}).catch((error)=>{
+						console.log('no permission');
+					})	
+				} 
 		  });
 		}
 	};

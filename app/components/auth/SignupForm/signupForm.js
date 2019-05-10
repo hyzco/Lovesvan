@@ -13,7 +13,7 @@ import {_getFetchBackgroundLocationAsync} from '../../../backgroundTask/map/back
 //Actions
 import { signupUser } from '../../../actions/session/actions';
 import { setCurrentLocation } from '../../../actions/maps/actions';
-
+const LOVESVAN_LOGO = require('../../../../assets/images/lovesvanlogowhite.png');
 
 
 const { height, width } = Dimensions.get('window');
@@ -23,25 +23,25 @@ class LoginFormComponent extends Component {
       super(props);
       this.state ={
         errorMessage : null,
-        location:{},
-        geoInfo:{},
+       // location:{},
+       // geoInfo:{},
         email: '',
         password: '',
         }
     }
-    componentDidMount(){
-      this._geoInfo();
+ /*   componentDidMount(){
+      //this._geoInfo();
     }
-  
+  */
     componentDidUpdate(prevProps) {
       if (this.props.registered) 
       {
-        this._getLocationAsync();
+      //  this._getLocationAsync();
         Actions.reset('home');
       } 
     }
   
-    _getLocationAsync = async ()=>{
+    /*_getLocationAsync = async ()=>{
       let { status } =  await Permissions.askAsync(Permissions.LOCATION);
     
       if (status !== 'granted') {
@@ -51,7 +51,7 @@ class LoginFormComponent extends Component {
       }
    
       let location =  await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.BestForNavigation,
+        accuracy: Location.Accuracy.HIGH,
       })
       .then((location)=>{
         this.location = ( JSON.stringify(location), location);
@@ -71,7 +71,7 @@ class LoginFormComponent extends Component {
             console.error(error);
         });
       } 
-  
+  */
     
       handleChange = (name, value) => {
         this.setState({ [name]: value });
@@ -88,7 +88,7 @@ class LoginFormComponent extends Component {
             <Block flex center style={{ justifyContent: 'center', alignItems: 'center',marginTop: theme.SIZES.BASE * 3}}>
                 <Image
                     style={{width: width/4.5, height: height/4.5,resizeMode:'contain'}}
-                    source={require('../../../../assets/images/lovesvanlogo.png')}/>
+                    source={LOVESVAN_LOGO}/>
             </Block>
 
  {loading ? (<LoadingIndicator color="#ffffff" size="large" />) : (null)}
@@ -123,8 +123,8 @@ class LoginFormComponent extends Component {
         round
         color={theme.COLORS.WHITE}
         
-        onPress={()=> {this.props.signup(email,password); this._getLocationAsync();
-          this.location = _getFetchBackgroundLocationAsync();
+        onPress={()=> {this.props.signup(email,password); /*this._getLocationAsync();
+          this.location = _getFetchBackgroundLocationAsync();*/
         }}>
         <Text center color="#E801DA" size={theme.SIZES.FONT * 0.90}>
           {"Register"}

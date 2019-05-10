@@ -1,6 +1,12 @@
 import firebaseService from '@firebase/app';
 import * as types from './actionsTypes';
 
+export const fetchMatches = (matches) => dispatch => {
+
+    dispatch(matchSuccess(matches));
+}
+
+
 export const restoreSession = () => dispatch => {
   dispatch(sessionLoading());
   dispatch(sessionRestoring());
@@ -113,3 +119,8 @@ const sessionError = error => ({
 const sessionLogout = () => ({
   type: types.SESSION_LOGOUT
 });
+
+const matchSuccess = (matches) => ({
+    type: types.MATCHES_SUCCESS,
+    matches
+})

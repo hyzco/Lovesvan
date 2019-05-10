@@ -1,0 +1,39 @@
+ import React, { Component } from 'react';
+import {
+  Image,
+  Dimensions,
+  View,
+  TouchableOpacity,  
+} from 'react-native';
+
+// galio components
+import { Block} from 'galio-framework';
+import theme from './theme';
+import { Actions } from 'react-native-router-flux';
+import Icons from 'react-native-vector-icons/FontAwesome';
+
+
+const screen = Dimensions.get('screen');
+
+
+
+export default class MenuFooter extends Component {
+
+  render(){
+      return(
+    <Block center style={{flexDirection: 'row',justifyContent: 'space-between',backgroundColor:"white",width:screen.width,height:50,top:0,bottom:0,borderTopWidth: 1,borderTopColor: '#dadada'}}>
+      
+               {/*   <Button onPress={this.logout} title="Logout" />  */}
+               <TouchableOpacity onPress={Actions.message}>
+               <Icons name={"comment"} color={"#707070"} solid style={{marginVertical:5,right:0,marginLeft:50}} size={30} />
+               </TouchableOpacity>
+               <TouchableOpacity onPress={Actions.home}>
+               <Image style={{width:45,height:45,resizeMode: 'contain',marginVertical:5}} source={require('../../../../assets/images/lovesvanlogo.png')}/>
+               </TouchableOpacity>
+               <TouchableOpacity onPress={Actions.profile}>
+               <Icons name={"user"} color={"#707070"} solid style={{marginVertical:5,right:0,marginRight:50}} size={30} />
+               </TouchableOpacity>
+            </Block>
+      );
+    }
+          }

@@ -10,13 +10,16 @@ import { connect } from 'react-redux';
 import { Actions } from 'react-native-router-flux';
 //Actions
 import { setCurrentLocation,AddMark, getReverseGeoCode,setLocationServiceStatus } from '../../../actions/maps/actions';
-import { loginUser, restoreSession } from './../../../actions/session/actions';
+import { loginUser, restoreSession, fetchMatches } from './../../../actions/session/actions';
 //import {locationFetcherBackground,markFetcherBackground,backgroundFetcherState} from '../../../actions/maps/backgroundFetcher'
 import {_getFetchBackgroundLocationAsync} from '../../../backgroundTask/map/backgroundTasks';
 //Database
 import firebase from '@firebase/app';
+
+import {Loading} from '../../loading';
+
 //Logo Const
-const LOVESVAN_LOGO = require('../../../../assets/images/lovesvanlogo.png');
+const LOVESVAN_LOGO = require('../../../../assets/images/lovesvanlogowhite.png');
 //Window Const
 const { height, width } = Dimensions.get('window');
 
@@ -29,24 +32,55 @@ class LoginFormComponent extends Component {
        geoInfo:{},
        email: '',
        password: '',
+       matches : []
       }
   }
 
   componentDidMount() {
     this.props.restore();   
-    const { error, logged } = this.props;
+    const { error, logged} = this.props;
     this._geoInfo();
+   
   }
 
   componentDidUpdate = async (prevProps)=>{
-    const { error, logged} = this.props;
+    const { error, logged, loading, user:{uid}} = this.props;
       if (!prevProps.error && error) Alert.alert('error', error);  
         if (logged) {
+          this._getMatches(uid);
           this._getLocationAsync();
           this._getMarksAsync();
-          Actions.reset('home')
+          Actions.reset('home');
         };
   }
+
+  _getMatches(uid){
+    console.log("getmatch");
+      let {matches} = this.state; 
+          let data ={
+              method: 'POST',
+              body: JSON.stringify({
+                uid: uid,
+              }),
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              }
+          }
+          return fetch('http://ffa1.lovesvan.com/api/get/matches',data)
+          .then(response => response.json()) //promise
+          .then((json) =>{
+            /*
+              json.matches.map((matches,i) => {
+                console.log(matches.ID);
+              })*/
+                this.props.setMatches(json.matches);
+
+          }).catch((error) =>{
+              console.log(error);
+          });
+  }
+
   _geoInfo(){
     return fetch('https://ipapi.co/json')
       .then((response) => response.json())
@@ -77,7 +111,7 @@ class LoginFormComponent extends Component {
           this.errorMessage = 'Permission to access location was denied';
         }
       let location =  await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.BestForNavigation,
+        accuracy: Location.Accuracy.HIGH,
       }).then((location)=>{
         this.location = ( JSON.stringify(location), location);
       }).catch((error) => {
@@ -95,12 +129,12 @@ class LoginFormComponent extends Component {
         var arrMarker = [];
         var ref2 = firebase.database().ref("Location/");
         ref2.once("value").then(snapshot => {
-          snapshot.forEach(function(snapshot1) {  
-              arrMarker.push({
-                m_uid:snapshot1.key,
-                m_longitude:snapshot1.val().longitude,
-                m_latitude:snapshot1.val().latitude
-            });
+          snapshot.forEach(function(snapshot1) {   
+                  arrMarker.push({
+                    m_uid:snapshot1.key,
+                    m_longitude:snapshot1.val().longitude,
+                    m_latitude:snapshot1.val().latitude
+                });
         })
       this.props.setMark(arrMarker);
     })
@@ -111,17 +145,20 @@ class LoginFormComponent extends Component {
   }
 
       render() {
+        
         const { login, loading } = this.props;
         const { email, password } = this.state;     
        return(
+         
           <LinearGradient colors={['#E801DA','#610080']} style={theme.styles.linearGradient}>
+
             <KeyboardAvoidingView style={theme.styles.container} behavior="padding" disabled>
                 <Block flex center style={theme.styles.blockMain}>
                     <Image
                         style={{width: width/4.5, height: height/4.5,resizeMode:'contain'}}
                         source={LOVESVAN_LOGO} />
                 </Block>
-                      {loading ? ( <LoadingIndicator color="#ffffff" size="large" />):null}
+                      {loading ?  <LoadingIndicator color="#ffffff" size="large" />: null }
         
                  <Block flex={2} middle space="evenly" style={{marginTop: theme.SIZES.BASE * 1}}>
                       <Input
@@ -173,6 +210,7 @@ class LoginFormComponent extends Component {
                     </Button>
                   </Block>
                </Block>
+       
         </KeyboardAvoidingView>
      </LinearGradient>
    );
@@ -180,13 +218,14 @@ class LoginFormComponent extends Component {
 }
     
 
-const mapStateToProps = ({ routes, sessionReducer: { restoring, loading, user, error, logged } }) => ({
+const mapStateToProps = ({ routes, sessionReducer: { restoring, loading, user, error, logged,matches} }) => ({
   routes: routes,
   restoring: restoring,
   loading: loading,
   user: user,
   error: error,
-  logged: logged
+  logged: logged,
+  matches: matches,
 });
 
 const mapDispatchToProps = {
@@ -195,9 +234,11 @@ const mapDispatchToProps = {
   setCurrent:setCurrentLocation,
   setMark : AddMark,
   locationServiceStatus : setLocationServiceStatus,
+  setMatches: fetchMatches,
     };
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(LoginFormComponent);
+
