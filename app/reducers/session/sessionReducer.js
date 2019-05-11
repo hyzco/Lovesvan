@@ -53,7 +53,7 @@ const sessionReducer = (state = initialState, action) => {
         restoring: false,
         loading: false,
         error: action.error,
-        logged: null,
+        logged: false,
         registered: null,
       };
     case types.MATCHES_SUCCESS:

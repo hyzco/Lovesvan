@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text,StyleSheet,KeyboardAvoidingView  } from 'react-native';
+import { View, Text,StyleSheet,KeyboardAvoidingView,Platform  } from 'react-native';
 import { connect } from 'react-redux';
 //import { styles } from '../styles';
 
@@ -105,7 +105,7 @@ render() {
               _id: this.user.uid,
           }}
           />
-             <KeyboardAvoidingView behavior={'padding'}  disabled/>
+            {Platform.OS==="android" ? <KeyboardAvoidingView behavior={'padding'}  disabled/>:null}
           </View>
   );
 }

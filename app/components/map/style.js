@@ -1,6 +1,7 @@
 import { StyleSheet,Dimensions } from 'react-native';
 import { Constants} from "expo";
-const screen = Dimensions.get('window');
+var width = Dimensions.get('window').width; //full width
+var height = Dimensions.get('window').height; //full height
 
 export const mapStyle =[
   {
@@ -120,13 +121,12 @@ export const mapStyle =[
 ]
 export const styles = StyleSheet.create({
   container: {
+      flex:1,
     ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    
   },
+  
   map: {
-    ...StyleSheet.absoluteFillObject,
+      flex:1,
   },
   refreshing: {
     marginBottom: 1

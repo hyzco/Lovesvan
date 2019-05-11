@@ -1,15 +1,15 @@
 import React from 'react';
-import {View} from 'react-native';
-import { Location, Permissions,TaskManager,LinearGradient} from "expo";
-import { setCurrentLocation,AddMark, getReverseGeoCode,setLocationServiceStatus } from '../../actions/maps/actions';
-import theme from '../auth/LoginForm/styleLogin';
-import { loginUser, restoreSession } from '../../actions/session/actions';
+import {Location, Permissions} from "expo";
 
 import { connect } from 'react-redux';
 import { Actions } from 'react-native-router-flux';
 
+import { Button, Block, Text } from '../../../assets/themeComponents';
+import { theme } from '../../../assets/themeComponents/constants';
 import { LoadingIndicator } from '../loadingIndicator/loadingIndicator';
 
+import { loginUser, restoreSession, fetchMatches } from '../../actions/session/actions';
+import { setCurrentLocation,AddMark, getReverseGeoCode,setLocationServiceStatus } from '../../actions/maps/actions';
 import {_getFetchBackgroundLocationAsync} from '../../backgroundTask/map/backgroundTasks';
 //Database
 import firebase from '@firebase/app';
@@ -28,24 +28,54 @@ export class Loading extends React.Component {
     componentDidMount() {
          this.props.restore();   
          const { error, logged } = this.props;
+         
          this._geoInfo();
-        
        }
      
-     componentDidUpdate = async (prevProps)=>{
-         const { error, logged, loading} = this.props;
-           if (!prevProps.error && error) Alert.alert('error', error);  
-             if (logged) {
+       componentDidUpdate = async (prevProps)=>{
+        const { error, logged, loading,user:{uid}} = this.props;
+          if (!prevProps.error && error) Alert.alert('error', error);  
+            if (logged) {
+              this._getMatches(uid);
               this._getLocationAsync();
               this._getMarksAsync();
-               Actions.reset('home');
-              if(loading){
-                 console.log("loading");
-                 Actions.reset('loading');
-               }
-             };
-         
-       }
+              Actions.reset('home');
+            }else{
+              Actions.reset('welcome');
+            }
+
+            if(loading){
+              Actions.reset('loading');
+            }
+          }
+
+
+          _getMatches(uid){
+            console.log("getmatch");
+              let {matches} = this.state; 
+                  let data ={
+                      method: 'POST',
+                      body: JSON.stringify({
+                        uid: uid,
+                      }),
+                      headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                      }
+                  }
+                  return fetch('http://ffa1.lovesvan.com/api/get/matches',data)
+                  .then(response => response.json()) //promise
+                  .then((json) =>{
+                    /*
+                      json.matches.map((matches,i) => {
+                        console.log(matches.ID);
+                      })*/
+                        this.props.setMatches(json.matches);
+
+                  }).catch((error) =>{
+                      console.log(error);
+                  });
+          }
 
        _geoInfo(){
         return fetch('https://ipapi.co/json')
@@ -109,11 +139,24 @@ export class Loading extends React.Component {
   render() {
       const {user} = this.props;
     return (
-        <LinearGradient colors={['#E801DA','#610080']} style={theme.styles.linearGradient}>
-            <LoadingIndicator color="#ffffff" size="large" />
+        
+          
            
-            
-        </LinearGradient>
+          <Block style={{backgroundColor:'#f3f3f3'}}>
+            <Block center bottom flex={0.4}>
+              <Text h1 center bold>
+                Love nest.
+                <Text h1 primary> LoveSvan</Text>
+              </Text>
+              <Text h3 gray2 style={{ marginTop: theme.sizes.padding / 2 }}>
+                Find your soulmate. 💖
+              </Text>
+            </Block>
+            <Block center middle>
+            <LoadingIndicator color="#E801DA" size="large" />
+            </Block>
+          </Block>
+       
     );
   }
 }
@@ -132,7 +175,7 @@ export class Loading extends React.Component {
         setMark : AddMark,
         locationServiceStatus : setLocationServiceStatus,
         restore: restoreSession,
-
+        setMatches : fetchMatches,
     };
 
     export default connect(

@@ -5,9 +5,9 @@ import { styles,mapStyle } from './style';
 import { Actions } from 'react-native-router-flux';
 import { logoutUser } from '../../actions/session/actions';
 
-import MapView, {ProviderPropType,AnimatedRegion, Marker } from 'react-native-maps';
+import MapView, {ProviderPropType,AnimatedRegion, Marker,PROVIDER_GOOGLE } from 'react-native-maps';
 import theme from './screen/theme'
-import { Components,Constants,Location,TaskManager, PROVIDER_GOOGLE } from "expo";
+import { Components,Constants,Location,TaskManager,  } from "expo";
 import firebaseService from '@firebase/app';
 import {LocationDialog} from '../map/screen/LocationModal';
 import DownSlidingPanel from './screen/DownSlidingPanel';
@@ -24,7 +24,7 @@ const screen = Dimensions.get('window');
 const ASPECT_RATIO = screen.width / screen.height;
 const LATITUDE = 37.78825;
 const LONGITUDE = -122.4324;
-const LATITUDE_DELTA = 0.010;
+const LATITUDE_DELTA = 0.025;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 
@@ -90,6 +90,7 @@ class Map extends React.Component {
             });
         },300);
       }
+      
 
      isUpdate = false;
       updateLocationChange(){
@@ -99,12 +100,14 @@ class Map extends React.Component {
               firebaseService.database().ref('/Location/'+user.uid).on('value', (snapshot) => {
                 const userObj = snapshot.val();
                 this.state.coordinate.setValue(userObj);
+
                 if(this.isUpdate==false){
                 this.setState({
                   latitude:userObj.latitude,
                   longitude:userObj.longitude,
                 });
                 this.isUpdate = true;
+                
               }
               this.updateMarkLocationChange(this.props.user.uid);
               });
@@ -131,8 +134,7 @@ class Map extends React.Component {
             requestMatch(uid,targetuid){
                   matchFunction(uid,targetuid,"request");
             }
-
-
+       
       render() {
         const {
           user: { displayName,email,photoURL,uid },
@@ -150,13 +152,18 @@ class Map extends React.Component {
                 <LocationDialog isTrue={locationServiceStatus} />
                     <MapView
                       ref={this._setMap.bind(this)}
+                      showsUserLocation={true}
+                      
+                      followsUserLocation={true}
                       provider = {PROVIDER_GOOGLE}
-                      style={[{flex: 1}, refreshing && styles.refreshing, styles.map]}
+                      style={[refreshing && styles.refreshing, styles.map]}
                       mapPadding={{ left: 0, right: 0, top: 0, bottom: 115 }}
                       customMapStyle={mapStyle}
-                      minZoomLevel={12.4}
+                      minZoomLevel={10.4}
                       maxZoomLevel={20}
                       showsCompass={false}
+                      showsMyLocationButton = {true}
+                    loadingEnabled
                       region={{
                             latitude : this.state.latitude,
                             longitude: this.state.longitude,
@@ -164,13 +171,13 @@ class Map extends React.Component {
                             latitudeDelta: LATITUDE_DELTA,
                         }}>
                   
-                  <Marker.Animated
+                  {/*<Marker.Animated
                           ref={marker => { this.marker = marker; }}
                           coordinate={this.state.coordinate}
                           title={this.props.user.uid}
                           description={this.props.user.email}
                           pinColor ={'#ff00c2'}
-                        />
+                  />*/}
 
                   {this.props.markLocation.map((mark,i) => {
                    
@@ -220,7 +227,7 @@ class Map extends React.Component {
          
            </MapView>     
         
-        <DownSlidingPanel matches={matches}/>
+             <DownSlidingPanel matches={matches}/>
       
           </View>
         );
