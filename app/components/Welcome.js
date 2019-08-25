@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Animated, Dimensions, Image, FlatList, Modal, StyleSheet, ScrollView } from 'react-native';
 
-import { Button, Block, Text } from '../../assets/themeComponents';
+import { ButtonCustomize, Block, Text } from '../../assets/themeComponents';
 import { theme } from '../../assets/themeComponents/constants';
 import { Actions } from 'react-native-router-flux';
 
@@ -58,9 +58,9 @@ class Welcome extends Component {
           </ScrollView>
 
           <Block middle padding={[theme.sizes.base / 2, 0]}>
-            <Button gradient onPress={() => this.setState({ showTerms: false })}>
+            <ButtonCustomize gradient onPress={() => this.setState({ showTerms: false })}>
               <Text center white>I understand</Text>
-            </Button>
+            </ButtonCustomize>
           </Block>
         </Block>
       </Modal>
@@ -142,12 +142,12 @@ class Welcome extends Component {
           {this.renderSteps()}
         </Block>
         <Block middle flex={0.5} margin={[0, theme.sizes.padding * 2]}>
-          <Button gradient onPress={() => Actions.login()}>
+          <ButtonCustomize gradient onPress={() => Actions.login()}>
             <Text center semibold white>Login</Text>
-          </Button>
-          <Button shadow onPress={() => Actions.signup()}>
+          </ButtonCustomize>
+          <ButtonCustomize shadow onPress={() => Actions.signup()}>
             <Text center semibold>Signup</Text>
-          </Button>
+          </ButtonCustomize>
             <Text center caption gray onPress={() => this.setState({ showTerms: true })}>Terms of service</Text>
         </Block>
         {this.renderTermsService()}

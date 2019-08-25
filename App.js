@@ -49,21 +49,6 @@ if (Platform.OS === 'android') {
 }
 
 class App extends Component {
-
-    componentDidMount() {
-        Font.loadAsync({
-          'SpaceMono-Regular': require('./assets/fonts/SpaceMono-Regular.ttf'),
-          'galioExtra' : require('./assets/fonts/galioExtra.ttf'),
-          'Roboto-Regular' : require('./assets/fonts/Roboto-Regular.ttf'),
-          'gotham1' : require('./assets/fonts/gotham-rounded/GothamRoundedBold_21016.ttf'),
-          'gotham2' : require('./assets/fonts/gotham-rounded/GothamRoundedBook_21018.ttf'),
-          'gotham3' : require('./assets/fonts/gotham-rounded/GothamRoundedLight_21020.ttf'),
-          'gotham4' : require('./assets/fonts/gotham-rounded/GothamRoundedMedium_21022.ttf')
-        });
-
-      
-      }
-
   render() {
     return <Routes />;
   }

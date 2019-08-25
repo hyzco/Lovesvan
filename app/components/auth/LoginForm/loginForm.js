@@ -1,5 +1,9 @@
 import React, { Component } from 'react';
-import { Location, Permissions,TaskManager,LinearGradient} from "expo";
+
+import * as TaskManager from 'expo-task-manager';
+import * as Location from 'expo-location';
+import * as Permissions from 'expo-permissions';
+import { LinearGradient } from 'expo-linear-gradient';
 //Fotm Components
 import {Alert, Dimensions, KeyboardAvoidingView, StyleSheet, Platform,Image} from 'react-native';
 import {Block, Button, Input, NavBar, Text, Card} from 'galio-framework';
@@ -29,7 +33,6 @@ class LoginFormComponent extends Component {
     super(props);
     this.state ={
        isLoading: false,
-       geoInfo:{},
        email: '',
        password: '',
        matches : []
@@ -37,109 +40,20 @@ class LoginFormComponent extends Component {
   }
 
   componentDidMount() {
-    this.props.restore();   
-    const { error, logged} = this.props;
-    this._geoInfo();
-   
+    this.props.restore();      
   }
 
   componentDidUpdate = async (prevProps)=>{
-    const { error, logged, loading, user:{uid}} = this.props;
+    const { error, logged, loading} = this.props;
       if (!prevProps.error && error) Alert.alert('error', error);  
         if (logged) {
-          this._getMatches(uid);
-          this._getLocationAsync();
-          this._getMarksAsync();
-          Actions.reset('home');
+          Actions.reset('loading');
         };
   }
 
-  _getMatches(uid){
-    console.log("getmatch");
-      let {matches} = this.state; 
-          let data ={
-              method: 'POST',
-              body: JSON.stringify({
-                uid: uid,
-              }),
-              headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-              }
-          }
-          return fetch('http://ffa1.lovesvan.com/api/get/matches',data)
-          .then(response => response.json()) //promise
-          .then((json) =>{
-            /*
-              json.matches.map((matches,i) => {
-                console.log(matches.ID);
-              })*/
-                this.props.setMatches(json.matches);
 
-          }).catch((error) =>{
-              console.log(error);
-          });
-  }
 
-  _geoInfo(){
-    return fetch('https://ipapi.co/json')
-      .then((response) => response.json())
-      .then((responseJson) => {
-          this.state.geoInfo=responseJson;
-      }).catch((error) => {
-          console.error(error);
-      });
-  } 
 
-  _getLocationAsync = async ()=>{
-    this.props.locationServiceStatus(false);   
-      var statusService = new Promise(function(resolve,reject){
-        setTimeout(function(){
-          resolve(Location.hasServicesEnabledAsync());
-        },300);
-    });
-    var serviceLocationStatus = null;
-     statusService.then(function(value){   
-        serviceLocationStatus = value;
-    });
-
-    const {user:{uid}} = this.props;
-    let {isAvailable} = this.state;
-
-      let { status } = await Permissions.askAsync(Permissions.LOCATION); 
-        if (status !== 'granted') {
-          this.errorMessage = 'Permission to access location was denied';
-        }
-      let location =  await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.HIGH,
-      }).then((location)=>{
-        this.location = ( JSON.stringify(location), location);
-      }).catch((error) => {
-        if(!serviceLocationStatus)
-           this.props.locationServiceStatus(true);
-      });
-
-        if(this.location && this.props.logged){
-          this.props.setCurrent(this.location,this.state.geoInfo);
-          _getFetchBackgroundLocationAsync(uid,this.state.geoInfo); 
-      }
-  }
-
-  _getMarksAsync = async ()=>{
-        var arrMarker = [];
-        var ref2 = firebase.database().ref("Location/");
-        ref2.once("value").then(snapshot => {
-          snapshot.forEach(function(snapshot1) {   
-                  arrMarker.push({
-                    m_uid:snapshot1.key,
-                    m_longitude:snapshot1.val().longitude,
-                    m_latitude:snapshot1.val().latitude
-                });
-        })
-      this.props.setMark(arrMarker);
-    })
-  }
-  
   handleChange = (name, value) => {
        this.setState({ [name]: value });
   }

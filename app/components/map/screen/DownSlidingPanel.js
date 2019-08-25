@@ -18,8 +18,11 @@ import {
 import theme from './theme';
 
 import Icons from 'react-native-vector-icons/Ionicons';
-
 import SlidingUpPanel from 'rn-sliding-up-panel';
+
+import SafeAreaView from 'react-native-safe-area-view';
+import FetchFeed from './FetchFeed';
+import CacheImage from '../../../enviroments/lib/CacheImage';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -29,7 +32,8 @@ class DownSlidingPanel extends Component {
     state={
         isPanelActive:false,
         Icon:"ios-arrow-up",
-        panel:null
+        panel:null,
+
     }
  
     checkPanelIsActive(){
@@ -50,6 +54,13 @@ class DownSlidingPanel extends Component {
         }
     }
 
+
+    componentWillUnmount(test){
+     return <FetchFeed userCount={10}/>
+    }
+
+ 
+
     static defaultProps = {
         draggableRange: {
           top: height / 1.75,
@@ -60,8 +71,11 @@ class DownSlidingPanel extends Component {
       _draggedValue = new Animated.Value(120)
     
       render() {
- 
-        const {top, bottom} = this.props.draggableRange
+
+
+     
+
+       const {top, bottom} = this.props.draggableRange
    
         const draggedValue = this._draggedValue.interpolate({
           inputRange: [bottom, top],
@@ -76,12 +90,14 @@ class DownSlidingPanel extends Component {
           <Block style={styles.container}>
        
             <SlidingUpPanel
-            friction={3}
+            friction={0.001}
               showBackdrop={false}
               allowDragging={false}
               ref={c => (this._panel = c)}
               draggableRange={this.props.draggableRange}
-              animatedValue={this._draggedValue}>
+              animatedValue={this._draggedValue}
+              
+                >
           
               <Block center style={styles.panel}>
        
@@ -93,38 +109,54 @@ class DownSlidingPanel extends Component {
                   </TouchableOpacity>
                 
                
-     <ScrollView>
+
+           {!this.state.isPanelActive ? ( 
               <Block top  style={{flex:1,flexDirection: 'row',justifyContent: 'space-between', marginBottom: 0,}}>
-                            <ScrollView
+                 <ScrollView
                                 horizontal={true}
                                 showsHorizontalScrollIndicator={false}>
-                                <Image style={{borderColor:theme.COLORS.DRIBBBLE,borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50,marginRight:5,marginLeft:3}} source={{uri:'https://media.nngroup.com/media/people/photos/Kathryn_1.jpg.400x400_q95_autocrop_crop_upscale.jpg'}} />
-                               
-                                <Image style={{borderColor:theme.COLORS.TWITTER,borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50,marginRight:5}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
-                                <Image style={{borderColor:theme.COLORS.FACEBOOK,borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50,marginRight:5}} source={{uri:'https://avatars.letgo.com/images/83/20/45/8b/8320458b422edf6defcfb974e06d67e08f68b909b78f8f2b4aba19f5dccc847b?impolicy=img_110'}} />
-                                <Image style={{borderColor:theme.COLORS.LOVESVANPURPLE,borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50,marginRight:5}} source={{uri:'https://pbs.twimg.com/profile_images/543563904568545280/cUvr30UJ.jpeg'}} />
-                                <Image style={{borderColor:theme.COLORS.LOVESVANPURPLE,borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50,marginRight:5}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
-                                <Image style={{borderColor:theme.COLORS.LOVESVANPURPLE,borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50,marginRight:5}} source={{uri:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwTF3NzpnGK2wOkzeyraQKzP-XoZ5INo9nmXH4mJe-viupBZP4'}} />
-                                <Image style={{borderColor:theme.COLORS.LOVESVANPINK,borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50,marginRight:5}} source={{uri:'https://media.nngroup.com/media/people/photos/Kathryn_1.jpg.400x400_q95_autocrop_crop_upscale.jpg'}} />
-                                <Image style={{borderColor:theme.COLORS.LOVESVANPURPLE,borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50,marginRight:5}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
-                                <Image style={{borderColor:theme.COLORS.LOVESVANPINK,borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50,marginRight:5}} source={{uri:'https://media.nngroup.com/media/people/photos/Kathryn_1.jpg.400x400_q95_autocrop_crop_upscale.jpg'}} />
-                                <Image style={{borderColor:theme.COLORS.LOVESVANPURPLE,borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50,marginRight:5}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
-
-                                </ScrollView>
-                                  </Block>
-                                    {this.state.isPanelActive ? ( <Block center>
-                                        <Text>Matches</Text>
-
-                                            {matches.map((matches,i)=>(
-                                                      <Text key={i}>{matches.ID}</Text>
-                                            ))}
-
-                                    </Block> ) : (null) }
+                                  <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.COLORS.LOVESVANPURPLE,borderRadius: 50,height: 75,width: 75,marginLeft:5,borderStyle:'dashed',marginRight:5}}> 
+                      <Image style={{borderColor:'white',borderWidth:1.5,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kathryn_1.jpg.400x400_q95_autocrop_crop_upscale.jpg'}} /> 
+                      </TouchableOpacity>
+                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.COLORS.LOVESVANPINK,borderRadius: 50,height: 75,width: 75, marginRight:5,borderStyle:'dashed'}}> 
+                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.COLORS.LOVESVANPURPLE,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
+                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://avatars.letgo.com/images/83/20/45/8b/8320458b422edf6defcfb974e06d67e08f68b909b78f8f2b4aba19f5dccc847b?impolicy=img_110'}} />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.COLORS.LOVESVANPINK,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
+                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.COLORS.LOVESVANPURPLE,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
+                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.COLORS.LOVESVANPINK,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
+                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwTF3NzpnGK2wOkzeyraQKzP-XoZ5INo9nmXH4mJe-viupBZP4'}} />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.COLORS.LOVESVANPURPLE,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
+                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kathryn_1.jpg.400x400_q95_autocrop_crop_upscale.jpg'}} />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.COLORS.LOVESVANPINK,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
+                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.COLORS.LOVESVANPURPLE,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
+                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kathryn_1.jpg.400x400_q95_autocrop_crop_upscale.jpg'}} />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.COLORS.LOVESVANPINK,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
+                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
+                      </TouchableOpacity>
+           </ScrollView>
+     </Block>) : (
                                 
+                                    <Block center style={{flex:1,justifyContent:'center',alignItems: 'center',flexDirection: 'row',alignSelf: 'center',}}>
+                                 
+                                          {  this.componentWillUnmount() }
+                                 
+                                    </Block>
+                                ) }
     
     
 
-            </ScrollView>
 
               </Block>
            

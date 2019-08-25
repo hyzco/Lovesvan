@@ -25,8 +25,10 @@ const COLORS = {
 
   const SIZES = {
     BASE: 16,
-    FONT: 16,
+    FONT: 14,
     OPACITY: 0.8,
+    RADIUS: 6,
+    PADDING: 25,
   };
 
   export default {

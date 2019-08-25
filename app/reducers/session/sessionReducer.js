@@ -8,6 +8,9 @@ const initialState = {
   logged: null,
   registered: null,
   matches :[],
+  lastMessages:[],
+  wizardCompleted: null,
+  userData:[],
 };
 
 const sessionReducer = (state = initialState, action) => {
@@ -25,6 +28,7 @@ const sessionReducer = (state = initialState, action) => {
         error: null,
         logged: true,
         registered: null,
+        wizardCompleted:true,
       };
     case types.SIGNUP_SUCCESS:
       return {
@@ -35,6 +39,7 @@ const sessionReducer = (state = initialState, action) => {
         error: null,
         logged: null,
         registered: true,
+        wizardCompleted:false,
       //  matches : action.matches,
       };
     case types.SESSION_ERROR:
@@ -55,12 +60,29 @@ const sessionReducer = (state = initialState, action) => {
         error: action.error,
         logged: false,
         registered: null,
+        matches:null,
       };
     case types.MATCHES_SUCCESS:
     return {
       ...state,
       matches : action.matches,
-    }
+    };
+    case types.LASTMESSAGES_SUCCESS:
+    return {
+      ...state,
+      lastMessages: action.lastMessages,
+    };
+    case types.WIZARD_SUCCESS:
+    return{
+      ...state,
+      wizardCompleted: action.wizardState,
+    };
+    case types.USERDATA_SUCCESS:
+    return{
+        ...state,
+        userData : action.userData,
+        
+    } 
     default:
       return state;
   }

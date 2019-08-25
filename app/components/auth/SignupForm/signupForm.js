@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
-import { Location, Permissions,LinearGradient} from "expo";
+
+import * as Location from 'expo-location';
+import * as Permissions from 'expo-permissions';
+import { LinearGradient } from 'expo-linear-gradient';
 //Theme
 import {Alert, Dimensions, KeyboardAvoidingView, Platform,Image} from 'react-native';
 import {Block, Button, Input, NavBar, Text, Card} from 'galio-framework';
@@ -18,7 +21,7 @@ const LOVESVAN_LOGO = require('../../../../assets/images/lovesvanlogowhite.png')
 
 const { height, width } = Dimensions.get('window');
 
-class LoginFormComponent extends Component {
+class SignupFormComponent extends Component {
     constructor(props){
       super(props);
       this.state ={
@@ -29,15 +32,15 @@ class LoginFormComponent extends Component {
         password: '',
         }
     }
- /*   componentDidMount(){
-      //this._geoInfo();
-    }
-  */
+
     componentDidUpdate(prevProps) {
+      const {error} = this.props;
+      if (!prevProps.error && error) Alert.alert('error', error);  
       if (this.props.registered) 
       {
+        console.log("registered");
       //  this._getLocationAsync();
-        Actions.reset('home');
+        Actions.reset('signupSteps');
       } 
     }
   
@@ -149,13 +152,11 @@ class LoginFormComponent extends Component {
 
 
 
-    const mapStateToProps = ({ routes, sessionReducer: { restoring, loading, user, error, logged } }) => ({
+    const mapStateToProps = ({ routes, sessionReducer: { loading, error, registered } }) => ({
       routes: routes,
-      restoring: restoring,
       loading: loading,
-      user: user,
       error: error,
-      logged: logged
+      registered: registered
     });
 
   const mapDispatchToProps = {
@@ -166,5 +167,5 @@ class LoginFormComponent extends Component {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(LoginFormComponent);
+)(SignupFormComponent);
 

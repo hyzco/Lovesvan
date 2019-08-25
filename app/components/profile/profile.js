@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import { Dimensions, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
 
-import { Card, Badge, Button, Block, Text } from '../../../assets/themeComponents';
+import { Card, Badge, ButtonCustomize, Block, Text } from '../../../assets/themeComponents';
 import { theme, mocks } from '../../../assets/themeComponents/constants';
 
+import firebaseService from '@firebase/app';
 
 import { connect } from 'react-redux';
 import { logoutUser } from '../../actions/session/actions';
@@ -16,9 +17,14 @@ export class Profile extends React.Component {
 
   logout = () => {
     //_unRegisterAllTasksAsync("background-fetch-location");
-    this.props.logout();
     setTimeout(() => {
-      Actions.reset('welcome');
+      firebaseService.auth().signOut().then(function() {
+        this.props.logout();
+         Actions.reset('welcome');
+          }).catch(function(error) {
+            // An error happened.
+          });
+
     }, 100);
   };
   
@@ -61,23 +67,29 @@ export class Profile extends React.Component {
   }
 
   render() {
-    const { user:{uid,photoURL,displayName} } = this.props;
+    const { user:{uid},userData } = this.props;
     const { categories } = this.state;
     const tabs = ['Badges', 'Missions', 'Powers'];
+    var avatar = "https://cdn.dribbble.com/users/1220170/screenshots/5758802/new_avatar_2x.jpg";
+    var age = (new Date().getFullYear())-(userData.dateOfBirth.split("-")[0]);
+    console.log("a",userData);
+    if(userData.profilePic[0] != "null"){
+      avatar = "http://ffa1.lovesvan.com/uploads/profilePic/300x300-"+userData.profilePic;
+    }    
 
     return (
       <Block style={{paddingTop: 15,backgroundColor:'#f3f3f3'}}>
         <Block flex={false} row center space="between" style={styles.header}>
         <Block flex={false} column center space="between">
-          <Text h2 bold>{displayName} 20</Text>
+          <Text h2 bold>{userData.name} {userData.surname} {age}</Text>
           <Text h5>Warsaw/Poland </Text>
           </Block>
-          <Button style={{backgroundColor:'transparent'}} onPress={() => Actions.settings()}>
+          <ButtonCustomize style={{backgroundColor:'transparent'}} onPress={() => Actions.settings()}>
             <Image
-              source={{uri:photoURL}}
+              source={{uri:avatar}}
               style={styles.avatar}
             />
-          </Button>
+          </ButtonCustomize>
         </Block>
 
         <Block flex={false} row style={styles.tabs}>
@@ -114,10 +126,10 @@ Profile.defaultProps = {
   profile: mocks.profile,
   categories: mocks.categories,
 }
-const mapStateToProps = ({ routes, sessionReducer: {user} }) => ({
+const mapStateToProps = ({ routes, sessionReducer: {user,userData} }) => ({
   routes: routes,
   user: user,
- 
+  userData : userData,
 
 });
 

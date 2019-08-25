@@ -4,7 +4,7 @@ import { Icon } from 'expo';
 
 import Text from './Text';
 import Block from './Block';
-import Button from './Button';
+import ButtonCustomize from './ButtonCustomize';
 import { theme } from './constants';
 
 export default class Input extends Component {

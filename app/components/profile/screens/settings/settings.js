@@ -2,16 +2,22 @@ import React, { Component } from 'react'
 import { Image, StyleSheet, ScrollView, TextInput } from 'react-native'
 import Slider from 'react-native-slider';
 
-import { Divider, Button, Block, Text, Switch } from '../../../../../assets/themeComponents';
+import { Divider, ButtonCustomize, Block, Text, Switch } from '../../../../../assets/themeComponents';
 import { theme, mocks } from '../../../../../assets/themeComponents/constants';
 
 import { connect } from 'react-redux';
 import { Actions } from 'react-native-router-flux';
-
-
-
+import { logoutUser } from '../../../../actions/session/actions';
 
 export class Setting extends React.Component {
+  logout = () => {
+    //_unRegisterAllTasksAsync("background-fetch-location");
+    this.props.logout();
+    setTimeout(() => {
+      Actions.reset('welcome');
+    }, 100);
+  };
+
   state = {
     budget: 850,
     monthly: 1700,
@@ -21,14 +27,13 @@ export class Setting extends React.Component {
     profile: {},
   }
 
-  componentDidMount() {
+  componentDidMount(){
     this.setState({ profile: this.props.profile });
   }
 
   handleEdit(name, text) {
     const { profile } = this.state;
     profile[name] = text;
-
     this.setState({ profile });
   }
 
@@ -39,35 +44,36 @@ export class Setting extends React.Component {
 
   renderEdit(name) {
     const { profile, editing } = this.state;
-
     if (editing === name) {
-      return (
-        <TextInput
-          defaultValue={profile[name]}
-          onChangeText={text => this.handleEdit([name], text)}
-        />
-      )
+        return (
+          <TextInput
+            defaultValue={profile[name]}
+            onChangeText={text => this.handleEdit([name], text)}
+          />
+        )
     }
-
-    return <Text >{profile[name]}</Text>
+    return <Text>{profile[name]}</Text>
   }
+
 
   render() {
     const { profile, editing } = this.state;
-    const { user:{uid,photoURL,displayName,email} } = this.props;
+    const { user:{uid,email}, userData } = this.props;
+    var age = (new Date().getFullYear())-(userData.dateOfBirth.split("-")[0]);
+
     return (
       <Block style={{backgroundColor:'#f3f3f3'}}>
         <Block flex={false} row center space="between" style={styles.header}>
         <Block flex={false} column center space="between">
-          <Text h2 bold>{displayName} 20</Text>
+          <Text h2 bold>{userData.name} {userData.surname} {age}</Text>
           <Text h5>Warsaw/Poland </Text>
           </Block>
-          <Button>
+          <ButtonCustomize onPress={()=>this.logout()}>
             <Image
               source={profile.avatar}
               style={styles.avatar}
             />
-          </Button>
+          </ButtonCustomize>
         </Block>
 
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -99,36 +105,35 @@ export class Setting extends React.Component {
           </Block>
 
           <Divider margin={[theme.sizes.base, theme.sizes.base * 2]} />
-
-          <Block style={styles.sliders}>
-            <Block margin={[10, 0]}>
-              <Text primary style={{ marginBottom: 10 }}>Budget</Text>
-              <Slider
-                minimumValue={0}
-                maximumValue={1000}
-                style={{ height: 19 }}
-                thumbStyle={styles.thumb}
-                trackStyle={{ height: 6, borderRadius: 6 }}
-                minimumTrackTintColor={theme.colors.secondary}
-                maximumTrackTintColor="rgba(157, 163, 180, 0.10)"
-                value={this.state.budget}
-                onValueChange={value => this.setState({ budget: value })}
-              />
+            <Block style={styles.sliders}>
+              <Block margin={[10, 0]}>
+                <Text primary style={{ marginBottom: 10 }}>Budget</Text>
+                  <Slider
+                    minimumValue={0}
+                    maximumValue={1000}
+                    style={{ height: 19 }}
+                    thumbStyle={styles.thumb}
+                    trackStyle={{ height: 6, borderRadius: 6 }}
+                    minimumTrackTintColor={theme.colors.secondary}
+                    maximumTrackTintColor="rgba(157, 163, 180, 0.10)"
+                    value={this.state.budget}
+                    onValueChange={value => this.setState({ budget: value })}
+                  />
               <Text caption gray right>$1,000</Text>
             </Block>
             <Block margin={[10, 0]}>
               <Text primary style={{ marginBottom: 10 }}>Monthly Cap</Text>
-              <Slider
-                minimumValue={0}
-                maximumValue={5000}
-                style={{ height: 19 }}
-                thumbStyle={styles.thumb}
-                trackStyle={{ height: 6, borderRadius: 6 }}
-                minimumTrackTintColor={theme.colors.secondary}
-                maximumTrackTintColor="rgba(157, 163, 180, 0.10)"
-                value={this.state.monthly}
-                onValueChange={value => this.setState({ monthly: value })}
-              />
+                <Slider
+                  minimumValue={0}
+                  maximumValue={5000}
+                  style={{ height: 19 }}
+                  thumbStyle={styles.thumb}
+                  trackStyle={{ height: 6, borderRadius: 6 }}
+                  minimumTrackTintColor={theme.colors.secondary}
+                  maximumTrackTintColor="rgba(157, 163, 180, 0.10)"
+                  value={this.state.monthly}
+                  onValueChange={value => this.setState({ monthly: value })}
+                />
               <Text caption gray right>$5,000</Text>
             </Block>
           </Block>
@@ -163,13 +168,14 @@ Setting.defaultProps = {
   profile: mocks.profile,
 }
 
-const mapStateToProps = ({ routes, sessionReducer: {user} }) => ({
+const mapStateToProps = ({ routes, sessionReducer: {user, userData} }) => ({
   routes: routes,
   user: user,
-  
+  userData : userData,
   });
   
 const mapDispatchToProps = {
+logout:logoutUser
 };
 
 export default connect(

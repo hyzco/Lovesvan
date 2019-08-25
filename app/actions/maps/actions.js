@@ -18,7 +18,6 @@ export function AddMark (item){
 export function setCurrentLocation (getLocation,geoInfo){
 	return(dispatch)=>{	
 //hıza göre işlemler yaptırt <3
-
 		dispatch(locationSuccess(getLocation));
 
 		var isNull = null;
@@ -28,7 +27,7 @@ export function setCurrentLocation (getLocation,geoInfo){
 		var city= null;
 
 		if(isNull != null){
-		 countryCode = geoInfo.country;
+		 countryCode = geoInfo.country_name;
 		 city = geoInfo.city;
 		}else{
 			countryCode = "NaN";

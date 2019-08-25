@@ -1,13 +1,32 @@
 import firebaseService from '@firebase/app';
 import * as types from './actionsTypes';
 
-export const fetchMatches = (matches) => dispatch => {
+export const setWizardState = (wizardState,_uid) => dispatch => {
+  var ref = firebaseService.database().ref("/Users/"+_uid);
+    ref.update({
+       wizardState:wizardState,
+    }).then(function(){
+           dispatch(wizardSuccess(wizardState));
+  	}).catch(function(error){
+            console.log(error.message);
+    });
+}
 
+export const fetchMatches = (matches) => dispatch => {
     dispatch(matchSuccess(matches));
 }
 
+export const fetchLastMessages = (lastMessages) => dispatch =>{
+  dispatch(lastMessageSuccess(lastMessages));
+}
+
+export const setUserData = (userData) => dispatch =>{
+  console.log("action",userData);
+  dispatch(userDataSuccess(userData));
+}
 
 export const restoreSession = () => dispatch => {
+  try{
   dispatch(sessionLoading());
   dispatch(sessionRestoring());
 
@@ -18,6 +37,10 @@ export const restoreSession = () => dispatch => {
       dispatch(sessionLogout());
     }
   });
+}
+catch(e){
+console.log(e);
+}
 };
 
 export const loginUser = (email, password) => dispatch => {
@@ -36,8 +59,6 @@ export const loginUser = (email, password) => dispatch => {
 export const signupUser = (email, password) => dispatch => {
   dispatch(sessionLoading());
 
-  const gender = "male";
-
   firebaseService
     .auth()
     .createUserWithEmailAndPassword(email, password)
@@ -48,11 +69,13 @@ export const signupUser = (email, password) => dispatch => {
             res.sendEmailVerification().then(function() {
                console.log("we sent verification e mail");
 
-               firebaseService.database().ref('Users/'+gender+'/'+res.uid).set({
+               firebaseService.database().ref('Users/'+res.uid).set({
                  email:res.email,
+                 wizardState: false,
                }).
                then((data)=>{
                  //success callback
+                 console.log(data);
                  console.log('database yükleme başarılı' , data)
                }).catch((error)=>{
                  //error callback
@@ -123,4 +146,19 @@ const sessionLogout = () => ({
 const matchSuccess = (matches) => ({
     type: types.MATCHES_SUCCESS,
     matches
-})
+});
+
+const lastMessageSuccess = (lastMessages) => ({
+   type: types.LASTMESSAGES_SUCCESS,
+   lastMessages
+});
+
+const wizardSuccess = (wizardState) =>({
+  type: types.WIZARD_SUCCESS,
+  wizardState
+});
+
+const userDataSuccess = (userData) =>({
+    type: types.USERDATA_SUCCESS,
+    userData
+});

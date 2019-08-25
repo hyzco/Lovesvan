@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Button,Text,Platform,Image,FlatList,Dimensions,Animated,TouchableOpacity } from 'react-native';
+import { View,Text,Image,StyleSheet,Dimensions,Animated,ScrollView } from 'react-native';
 import { connect } from 'react-redux';
 import { styles,mapStyle } from './style';
 import { Actions } from 'react-native-router-flux';
@@ -7,16 +7,17 @@ import { logoutUser } from '../../actions/session/actions';
 
 import MapView, {ProviderPropType,AnimatedRegion, Marker,PROVIDER_GOOGLE } from 'react-native-maps';
 import theme from './screen/theme'
-import { Components,Constants,Location,TaskManager,  } from "expo";
+
 import firebaseService from '@firebase/app';
 import {LocationDialog} from '../map/screen/LocationModal';
 import DownSlidingPanel from './screen/DownSlidingPanel';
+import TopPanelOnMap from './screen/TopPanelOnMap';
 import {Block} from 'galio-framework';
 import Icons from 'react-native-vector-icons/FontAwesome';
-
-import {UserModal} from '../map/screen/userModal'
-
-import matchFunction from '../map/function/matchFunction';
+import {_getFetchBackgroundLocationAsync} from '../../backgroundTask/map/backgroundTasks'
+import { SliderBox } from 'react-native-image-slider-box';
+import {Profile} from './screen/Profile';
+import Modal from 'react-native-modal';
 
 const screen = Dimensions.get('window');
 
@@ -39,23 +40,35 @@ class Map extends React.Component {
   };
       constructor(props){
         super(props);
-        this. state = {
+        this.state = {
           errorMessage : null,
           latitude: LATITUDE,
           longitude: LONGITUDE,
                 coordinate: new AnimatedRegion({
                     latitude: LATITUDE,
                     longitude: LONGITUDE,
+                    longitudeDelta: LONGITUDE_DELTA,
+                    latitudeDelta: LATITUDE_DELTA,
                 }),
                 refreshing: false,   
-            };
+          userData:this.props.userData,
+          visibleModal: null,
+          showingUserID: null,
+          showingUserData:{},
+          images: [],
+          widthImageBox: null,
       }
+    }
 
       componentDidMount(){
           this.updateLocationChange();
           setTimeout(this.refresh.bind(this), 1000)
       }
-  
+      
+      componentWillUnmount(){
+        this.updateLocationChange();
+      }
+
       _setMap(ref) {
         this.map = ref
       }
@@ -67,6 +80,7 @@ class Map extends React.Component {
     
 
       updateMarkLocationChange(uid){
+        try{
         setTimeout(() => {
             let data ={
                 method: 'POST',
@@ -82,36 +96,51 @@ class Map extends React.Component {
             .then(response => response.json()) //promise
             .then((json) =>{
             if(json.newLocation !== null){     
-                this.animate(json.newLocation);
+              console.log("updatemarklocation",json.newLocation);
+                this.animate(json.newLocation);  
             }
+            
             },function(){
             }).catch((error) =>{
                 console.log(error);
             });
         },300);
+      }catch(e){
+        console.log(e);
+      }
       }
       
 
      isUpdate = false;
       updateLocationChange(){
+        try{
         const {logged} = this.props;
         if(logged){
               var user = firebaseService.auth().currentUser;
               firebaseService.database().ref('/Location/'+user.uid).on('value', (snapshot) => {
                 const userObj = snapshot.val();
-                this.state.coordinate.setValue(userObj);
-
+                var userMarkLocation = {
+                  latitude : userObj.latitude,
+                  longitude : userObj.longitude,
+                  latitudeDelta: LATITUDE_DELTA,
+                  longitudeDelta: LONGITUDE_DELTA,
+                }               
+                this.state.coordinate.setValue(userMarkLocation);
                 if(this.isUpdate==false){
+                  //set state çözüm bul arada gümlüyor
                 this.setState({
                   latitude:userObj.latitude,
                   longitude:userObj.longitude,
                 });
                 this.isUpdate = true;
-                
               }
+              console.log("testUpdateLocation OK");
               this.updateMarkLocationChange(this.props.user.uid);
               });
          }
+        }catch(e){
+            console.log("err2",e);
+        }
        }
 
        animate(region) {
@@ -131,10 +160,56 @@ class Map extends React.Component {
                       coordinate.timing(newCoordinate).start();
             }}
 
-            requestMatch(uid,targetuid){
-                  matchFunction(uid,targetuid,"request");
-            }
+          
        
+            getShowingUserData(uid,e){
+                let nativeEvent = e.nativeEvent;
+                let data = {
+                      method:'POST',
+                      body: JSON.stringify({
+                          _uid:uid,
+                      }),
+                      headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                      }
+                  }
+                  return fetch('http://ffa1.lovesvan.com/api/user/getUserData',data)
+                  .then(response => response.json()) //promise
+                  .then((json) =>{
+                      this.setState({
+                        showingUserData:json.dataUser,   
+                        visibleModal:'userRenderModal',
+                        latitude: nativeEvent.coordinate.latitude,
+                        longitude: nativeEvent.coordinate.longitude,                   
+                      });
+                  }).catch((error) =>{
+                      console.log(error);
+                  });
+            }
+            
+            onLayout = e => {
+              this.setState({
+                widthImageBox: e.nativeEvent.layout.width
+              });
+          };
+
+          mapImage = function(isPremium) {
+            var colorBorder = null;
+            if(isPremium){
+                colorBorder = "#fccf00";
+            }else{
+                colorBorder = "#ff00c2";
+            }
+            return {
+                width:45,
+                height:45,
+                borderRadius:45/2,
+                borderColor:colorBorder,
+                borderWidth:2.5,
+            }
+          }
+
       render() {
         const {
           user: { displayName,email,photoURL,uid },
@@ -145,14 +220,30 @@ class Map extends React.Component {
         
         const { refreshing } = this.state;
 
-     
-
         return (
            <View style={styles.container}>
                 <LocationDialog isTrue={locationServiceStatus} />
+
+                <Block style={stylesModal.container}>            
+                    <Modal
+                        isVisible={this.state.visibleModal === 'userRenderModal'}
+                        onBackdropPress={() => this.setState({visibleModal: null})}
+                        onBackButtonPress={()=>this.setState({visibleModal: null})}>
+                        <View style={stylesModal.content} onLayout={this.onLayout}>
+                        <ScrollView style={{flex:1,width:this.state.widthImageBox}} showsVerticalScrollIndicator={false}>
+                      
+                      
+                            <Profile data={this.state.showingUserData} userData={uid} />
+
+
+                        </ScrollView>
+                        </View>
+                    </Modal>
+              </Block>
+
                     <MapView
                       ref={this._setMap.bind(this)}
-                      showsUserLocation={true}
+                     // showsUserLocation={true}
                       
                       followsUserLocation={true}
                       provider = {PROVIDER_GOOGLE}
@@ -163,70 +254,75 @@ class Map extends React.Component {
                       maxZoomLevel={20}
                       showsCompass={false}
                       showsMyLocationButton = {true}
-                    loadingEnabled
                       region={{
                             latitude : this.state.latitude,
                             longitude: this.state.longitude,
                             longitudeDelta:LONGITUDE_DELTA,
                             latitudeDelta: LATITUDE_DELTA,
                         }}>
-                  
-                  {/*<Marker.Animated
+                
+          <Marker.Animated
                           ref={marker => { this.marker = marker; }}
                           coordinate={this.state.coordinate}
                           title={this.props.user.uid}
-                          description={this.props.user.email}
+                          description={"IT IS YOU !"}
                           pinColor ={'#ff00c2'}
-                  />*/}
+                      />
 
                   {this.props.markLocation.map((mark,i) => {
                    
                      
-                      if(mark.m_uid !== this.props.user.uid){
+                      if(mark.m_uid != this.props.user.uid){
                       return(         
                       <MapView.Marker
                         coordinate={{
                           latitude : mark.m_latitude,
                           longitude: mark.m_longitude,
                         }}
-                              key = {mark.m_uid}
-                              title={mark.m_uid}
-                              description={mark.m_uid+" "}
-                              pinColor={'#7704A7'}>
-
-                                  <MapView.Callout
-                                    onPress={()=>this.requestMatch(uid,mark.m_uid)}
-                                      >
-                        
-                                                <Text> Try to catch </Text> 
-                                          
-                                      
-                                  </MapView.Callout>
+                            
+                                key = {mark.m_uid}
+                                pinColor={'#7704A7'}
+                                onPress={(e)=> {
+                                  this.getShowingUserData(mark.m_uid,e);
+                               }}
+                               >
+                                 <Image
+                                    source={{uri:mark.m_profilePic}}
+                                    style={this.mapImage(mark.m_isPremium)}
+                                  />
+                                    
                              </MapView.Marker> 
                           );
                         }
-                        else if(mark.m_uid == this.props.user.uid){
-                        /*  return(   
+                        /*else if(mark.m_uid == this.props.user.uid){
+                          console.log("map.js",this.state.coordinate);
+                          return(   
                           <Marker.Animated
                           ref={marker => { this.marker = marker; }}
                           coordinate={{
                             latitude : mark.m_latitude,
-                            longitude: mark.m_longitude,
+                            longitude:mark.m_longitude ,
                           }}
                           key ={mark.m_uid}
                           title={this.props.user.uid}
                           description={this.props.user.email}
                           pinColor ={'#ff00c2'}
                         />
-                        );*/
-                        }
+                        );
+                        }*/
 
                       })
                      
                   }
          
            </MapView>     
-        
+           <View  style={{
+            position: 'absolute',//use absolute position to show button on top of the map
+            top: '6%', //for center align
+            alignSelf: 'center' //for align to right
+        }}>
+           <TopPanelOnMap userData={this.state.userData} userID={firebaseService.auth().currentUser}/>
+        </View>
              <DownSlidingPanel matches={matches}/>
       
           </View>
@@ -242,6 +338,7 @@ class Map extends React.Component {
               markLocation:markSuccess,
               locationServiceStatus:status,
               matches: sessionReducer.matches,
+              userData: sessionReducer.userData,
             });
 
             const mapDispatchToProps = {
@@ -258,3 +355,18 @@ class Map extends React.Component {
 
 
        
+    const stylesModal = StyleSheet.create({
+      container: {
+       // flex: 1,        
+      },
+      content: {
+        height:screen.height/2,
+        backgroundColor: 'white',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 4,
+        borderColor: 'rgba(0, 0, 0, 0.1)',
+      },
+
+    })
+  

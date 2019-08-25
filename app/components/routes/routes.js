@@ -15,8 +15,16 @@ import WelcomeContainer from '../Welcome'
 import ProfileContainer from './../profile';
 import SettingsContainer from './../profile/screens/settings';
 
-import SessionContainer from './../auth/LoginForm';
 import SignupContainer from './../auth/SignupForm';
+import StepWizardContainer from './../auth/SignupForm/registerWizard';
+import Step1WizardContainer from './../auth/SignupForm/registerWizard/steps/step1';
+import Step2WizardContainer from './../auth/SignupForm/registerWizard/steps/step2';
+import Step3WizardContainer from './../auth/SignupForm/registerWizard/steps/step3';
+import Step4WizardContainer from './../auth/SignupForm/registerWizard/steps/step4';
+import Step5WizardContainer from './../auth/SignupForm/registerWizard/steps/step5';
+
+
+import SessionContainer from './../auth/LoginForm';
 import TodolistContainer from './../todolist';
 import HomeContainer from './../map/'
 
@@ -24,6 +32,10 @@ import LoadingContainer from './../loading/';
 
 import configureStore from '../../store';
 import Icons from 'react-native-vector-icons/FontAwesome';
+
+
+import FetchFeed from './../map/screen/FetchFeed';
+
 
 const store = configureStore();
 const RouterRedux = connect()(Router);
@@ -47,11 +59,21 @@ export default class Routes extends React.Component {
           <Scene key="root" hideNavBar={true}>
         
             <Scene  key="login" hideNavBar={true} component={SessionContainer}  />
+
             <Scene key="signup" component={SignupContainer} title="Signup" />
+              {/* Signup Steps  */}
+              <Scene key ="signupSteps" component={StepWizardContainer} title="Signup"/>
+              <Scene key ="Step1" hideNavBar={false} component={Step1WizardContainer} title="Birthday"/>
+              <Scene key ="Step2" hideNavBar={false} component={Step2WizardContainer} title="Location Service"/>
+              <Scene key ="Step3" hideNavBar={false} component={Step3WizardContainer} title="Gender"/>
+              <Scene key ="Step4" hideNavBar={false} component={Step4WizardContainer} title="Picture"/>
+              <Scene key ="Step5" hideNavBar={false} component={Step5WizardContainer} title="Be Happy !"/>
+
+            <Scene key ="FetchFeed" hideNavBar={true} component={FetchFeed} initial={false} title="Feed"/>
 
 
             <Scene  key="welcome" component={WelcomeContainer} title="welcome"/>
-            <Scene key="loading" component={LoadingContainer} title="Loading" initial={true}   />
+            <Scene key="loading" component={LoadingContainer} title="Loading"  initial={true}   />
 
             <Scene key="privateRoom" component={PrivateRoomContainer} title="PrivateRoom"  />
            {/*} <Scene key="home" component={HomeContainer} title="Home" />*/}
