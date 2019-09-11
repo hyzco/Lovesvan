@@ -122,11 +122,11 @@ export const mapStyle =[
 export const styles = StyleSheet.create({
   container: {
       flex:1,
-    ...StyleSheet.absoluteFillObject,
+    //...StyleSheet.absoluteFillObject,
   },
   
   map: {
-      flex:1,
+      ...StyleSheet.absoluteFill
   },
   refreshing: {
     marginBottom: 1

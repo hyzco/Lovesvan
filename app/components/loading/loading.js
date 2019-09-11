@@ -278,46 +278,7 @@ export class Loading extends React.Component {
             return fetch('http://ffa1.lovesvan.com/api/get/marker',dataForMarker)
             .then(response => response.json()) //promise
             .then((json) =>{
-                json.forEach(function(value){
-                  counterOne++;
-                  let dataForProfile = {
-                    method:'POST',
-                    body: JSON.stringify({
-                        _uid:value.m_uid,
-                    }),
-                    headers: {
-                      Accept: 'application/json',
-                      'Content-Type': 'application/json',
-                    }
-                }
-                return fetch('http://ffa1.lovesvan.com/api/user/getUserData',dataForProfile)
-                .then(response => response.json()) //promise
-                .then((json2) =>{
-                    if(json2.dataUser.profilePic != "null"){
-                        arrMarker.push({
-                          m_uid:value.m_uid,
-                          m_longitude:value.m_longitude,
-                          m_latitude:value.m_latitude,
-                          m_isPremium: value.m_isPremium,
-                          m_profilePic: "http://ffa1.lovesvan.com/uploads/profilePic/300x300-"+json2.dataUser.profilePic[0],
-                      });
-                    }else{
-                        arrMarker.push({
-                          m_uid:value.m_uid,
-                          m_longitude:value.m_longitude,
-                          m_latitude:value.m_latitude,
-                          m_isPremium: value.m_isPremium,
-                          m_profilePic : "https://cdn.dribbble.com/users/1220170/screenshots/5758802/new_avatar_2x.jpg",
-                      });
-                    }
-                    if(counterOne == arrMarker.length){
-                      resolve(arrMarker);
-                    }
-                          
-                      }).catch((error) =>{
-                          console.log(error);
-                      });
-                })  
+                resolve(json);
             }).catch((error) =>{
                 console.log(error);
             });

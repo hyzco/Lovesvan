@@ -21,6 +21,11 @@ import { ColorPicker,Tag,CheckBox   } from 'react-native-btr';
 import {Switch} from '../../../../assets/themeComponents';
 import firebaseService from '@firebase/app';
 
+const io = require('socket.io-client');
+const SOCKET_URL = 'http://ffa1.lovesvan.com:3000';
+const socket = io(SOCKET_URL, {
+  transports: ['websocket'],
+});
 
 const { width, height } = Dimensions.get('screen');
 
@@ -42,6 +47,23 @@ class TopPanelOnMap extends Component {
     moodState: this.props.userData.moodState,
     svanCoin: this.props.userData.svanCoin,
   };
+
+
+  componentDidMount(){
+      this.realTimeUpdateUserData(this.state.UID);
+  }
+
+
+  realTimeUpdateUserData(uid){
+      socket.emit('setIDgetUser',uid);
+      socket.on('getUserData', (data)=>{
+        console.log("socketio",data);
+        this.setState({
+          svanCoin:data.svanCoin,
+        })
+      })
+  }
+
 
   componentDidUpdate(){
     genderIcon = <FontAwesome5  name={"venus-mars"} solid size={15} color="#610080" />;
@@ -125,28 +147,26 @@ class TopPanelOnMap extends Component {
         name='Party'
         style={{backgroundColor: '#9C27B0', color: '#fff', borderRadius: 50, borderWidth: 1}}
        // iconLeft='plus-circle'
-      //  iconRight='close-circle'
+       // iconRight='close-circle'
       onPress={()=>this.updateMoodState(false,"Party")}
       />
         <Tag 
         name='Travel'
         style={{backgroundColor: '#3F51B5', color: '#fff', borderRadius: 50, borderWidth: 1}}
        // iconLeft='plus-circle'
-      //  iconRight='close-circle'
+       // iconRight='close-circle'
       onPress={()=>this.updateMoodState(false,"Travel")}
       />
         <Tag 
         name='Love'
         style={{backgroundColor: '#2196F3', color: '#fff', borderRadius: 50, borderWidth: 1}}
        // iconLeft='plus-circle'
-      //  iconRight='close-circle'
+       // iconRight='close-circle'
       onPress={()=>this.updateMoodState(false,"Love")}
       />
 
-        </Block>
-
+         </Block>
         <Text style={{fontSize:20,marginTop:5}}>{this.state.moodState} 😎</Text>
-
     </View>
   );
 
@@ -164,42 +184,45 @@ class TopPanelOnMap extends Component {
 
       render() {
         return (
-          <Block style={styles.container}>      
-              <Block style={styles.box}>
+          <Block style={styles.container}>
 
-                <Button style={[{width:100,height:35},styles.button]} 
-                    onPress={() => this.setState({ visibleModal: 'genderModal' })}>
+          <Block style={styles.box}>
+                <Button style={[{width:(width/3)-30,height:35},styles.button]} 
+                     onPress={() => this.setState({ visibleModal: 'genderModal' })}>
                    <Text style={{color:"#610080",fontWeight:'bold'}}>{genderIcon} Gender</Text>
                 </Button>
 
-                  <Button style={[{width:140,height:35},styles.button]} 
-                   onPress={() => this.setState({ visibleModal: 'moodModal' })}>
+                <Button style={[{width:width/3,height:35},styles.button]} 
+                     onPress={() => this.setState({ visibleModal: 'moodModal' })}>
                   <Text style={{color:this.state.selectedColor,fontWeight:'bold'}}>{moodIcon} {this.state.moodState}</Text>
                 </Button>
 
-              <Button style={[{width:100,height:35},styles.button]} 
-                   onPress={() => this.setState({ visibleModal: 'coinModal' })}>
+                <Button style={[{width:(width/3)-30,height:35},styles.button]} 
+                     onPress={() => this.setState({ visibleModal: 'coinModal' })}>
                    <Text style={{color:"#610080",fontWeight:'bold'}}>{coinIcon} {this.state.svanCoin}</Text>
                 </Button>
-
             </Block>
             
                   <Modal
                       isVisible={this.state.visibleModal === 'genderModal'}
+                      useNativeDriver={true}
                       onBackdropPress={() => this.setState({visibleModal: null})}
                       onBackButtonPress={()=>this.setState({visibleModal: null})}>
                       {this.genderRenderModal()}
+                      
                   </Modal>
 
                   <Modal
                       isVisible={this.state.visibleModal === 'moodModal'}
+                      useNativeDriver={true}
                       onBackdropPress={() => this.setState({visibleModal: null})}
-                      onBackButtonPress={()=>this.setState({visibleModal: null})}>
+                      onBackButtonPress={() =>this.setState({visibleModal: null})}>
                       {this.moodRenderModal()}
                   </Modal>
 
                   <Modal
                       isVisible={this.state.visibleModal === 'coinModal'}
+                      useNativeDriver={true}
                       onBackdropPress={() => this.setState({visibleModal: null})}
                       onBackButtonPress={()=>this.setState({visibleModal: null})}>
                       {this.coinRenderModal()}
@@ -211,7 +234,6 @@ class TopPanelOnMap extends Component {
 }
     const styles = StyleSheet.create({
     container: {
-    //  flex: 1,        
     },
     box:{
       flexDirection: 'row',
@@ -224,7 +246,7 @@ class TopPanelOnMap extends Component {
        borderBottomRightRadius: 15,
        borderTopLeftRadius: 15,
        borderTopRightRadius: 15,
-       marginHorizontal:15,
+       marginHorizontal:10,
     },
     content: {
       backgroundColor: 'white',

@@ -10,17 +10,22 @@ import {
         FlatList,
         Image,
         StyleSheet,
-        Dimensions
+        Dimensions,
+        ImageBackground,
+        TextInput
       } from 'react-native';
       import {
         Block
       } from 'galio-framework';
 import { connect } from 'react-redux';
+import { Asset } from 'expo-asset';
 //import { styles } from './styles';
 import { Actions } from 'react-native-router-flux';
 import Spinner from 'react-native-loading-spinner-overlay';
 import firebaseService from '@firebase/app';
 import { theme } from '../../../assets/themeComponents/constants/';
+
+import StoryContainer from '../story';
 const { width,height } = Dimensions.get('screen');
 
 //Socket IO 
@@ -68,12 +73,11 @@ class Message extends React.Component {
       dataSource:[],
     loading: true,
     lastMessage : [],
+    WaitingRequestMatch : 0,
+    lastRequestProfilePic: null,
     };
   }
 
-  componentDidUpdate(){
-
-  }
 
   generateChatId(uid,matchid) {
     if(uid > matchid){
@@ -117,7 +121,6 @@ class Message extends React.Component {
   }
 
   _getMatches = async (uid) =>{
-    console.log("getmatch");
     const matchArr = [];
       let {matches} = this.state; 
           let data ={
@@ -133,7 +136,8 @@ class Message extends React.Component {
           return fetch('http://ffa1.lovesvan.com/api/get/matches',data)
           .then(response => response.json()) //promise
           .then((json) =>{
-                      json.matches.map((matches,i) => {
+                      json.matches.map(async (matches,i) => {
+                        var profilePicture = await getMatchProfilePic(matches.ID);
                         var Matches = [];
                         let data ={
                             method: 'POST',
@@ -148,7 +152,7 @@ class Message extends React.Component {
                         }
                         return fetch('http://ffa1.lovesvan.com/api/get/lastMessages',data)
                         .then(response => response.json()) //promise
-                        .then(async (json2) =>{
+                        .then(async (json2) =>{                          
                           if (json2.lastMessage && json2.lastMessage.length) {
                             json2.lastMessage.map(async (message,i)=>{
                               matchArr.push({
@@ -156,7 +160,7 @@ class Message extends React.Component {
                                 ID: matches.ID,
                                 Name: matches.Name,
                                 lastMessage: message.LastMessage,
-                              //  photoURL: await getMatchProfilePic(matches.ID),
+                                photoURL: profilePicture,
                               })
                           })
                             }else{
@@ -164,13 +168,11 @@ class Message extends React.Component {
                                 Email: matches.Email,
                                 ID: matches.ID,
                                 Name: matches.Name,
-                                //photoURL: await getMatchProfilePic(matches.ID),
+                                photoURL:profilePicture,
                               })
                             
                             }
-                         
-                          console.log("173-",matchArr)
-                
+                                        
                         this.listMatchItems(matchArr);
                         this.props.setMatches(matchArr);
                         }).catch((error) =>{
@@ -182,118 +184,96 @@ class Message extends React.Component {
           });
   }
 
+  getWaitingMatchCount(uid){
+    const matchArr = [];
+    let {matches} = this.state; 
+        let data ={
+            method: 'POST',
+            body: JSON.stringify({
+              uid: uid,
+            }),
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            }
+        }
+        return fetch('http://ffa1.lovesvan.com/api/get/requestMatches',data)
+        .then(response => response.json()) //promise
+        .then((json) =>{
+              json.map(async (value,i)=>{
+                  if(i == json.length-1){
+                    if(value.countWaitings <=99){
+                      this.setState({
+                        WaitingRequestMatch: value.countWaitings,
+                      })
+                    }
+                    else{
+                      this.setState({
+                        WaitingRequestMatch: 99,
+                      })
+                    }
+                  }
+                  
+                  if(i == json.length-2){
+                    this.setState({
+                       lastRequestProfilePic: await getMatchProfilePic(value.waitingMatchID),
+                    })
+                  }
+
+                })
+        }).catch((error) =>{
+          console.log(error);
+      });
+  }
+
+
+
   componentDidMount(){
     const  {
       user:{displayName,email,photoURL,uid},
       matches
      }=this.props;
+     console.log("WaitingMatches",this.state.WaitingRequestMatch);
 
+     this.getWaitingMatchCount(uid);
      this.listMatchItems(matches);
   }
 
 
   renderPremiumStories() {
     return(
-       <ScrollView
-                        horizontal={true}
-                        showsHorizontalScrollIndicator={false}>
-                   <Block top  style={{marginTop: 10,flex:1,flexDirection: 'row',justifyContent: 'space-between', marginBottom: 0}}>       
-                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.gold,borderRadius: 50,height: 75,width: 75,marginLeft:5,borderStyle:'dashed',marginRight:5}}> 
-                      <Image style={{borderColor:'white',borderWidth:1.5,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kathryn_1.jpg.400x400_q95_autocrop_crop_upscale.jpg'}} /> 
-                      </TouchableOpacity>
-                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.dimaond,borderRadius: 50,height: 75,width: 75, marginRight:5,borderStyle:'dashed'}}> 
-                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.gold,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
-                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://avatars.letgo.com/images/83/20/45/8b/8320458b422edf6defcfb974e06d67e08f68b909b78f8f2b4aba19f5dccc847b?impolicy=img_110'}} />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.dimaond,borderRadius: 50,height: 75,width: 75, marginRight:5,borderStyle:'dashed'}}> 
-                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.gold,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
-                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.dimaond,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
-                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwTF3NzpnGK2wOkzeyraQKzP-XoZ5INo9nmXH4mJe-viupBZP4'}} />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.gold,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
-                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kathryn_1.jpg.400x400_q95_autocrop_crop_upscale.jpg'}} />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.dimaond,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
-                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.gold,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
-                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kathryn_1.jpg.400x400_q95_autocrop_crop_upscale.jpg'}} />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.dimaond,borderRadius: 50,height: 75,width: 75,marginRight:5,borderStyle:'dashed'}}> 
-                      <Image style={{borderColor:'white',borderWidth:2,width: 70, height: 70, backgroundColor: 'powderblue',borderRadius:50}} source={{uri:'https://media.nngroup.com/media/people/photos/Kim-Flaherty-Headshot.png.400x400_q95_autocrop_crop_upscale.png'}} />
-                      </TouchableOpacity>
       
-                  </Block>
+       <ScrollView
+                    horizontal={true}
+                        showsHorizontalScrollIndicator={false}>
+                   
+                 
+          {this.state.WaitingRequestMatch > 0 ? (
+                   <TouchableOpacity style={{borderWidth: 2,justifyContent: "center",alignItems: "center",borderColor: theme.colors.gold,borderRadius: 50,height: 75,width: 75,marginLeft:5,marginRight:5}}> 
+                      <ImageBackground blurRadius={6}  imageStyle={{ borderRadius: 70/2,borderColor:'white',borderWidth:1.5,backgroundColor: 'powderblue'}} style={{width: 70, height: 70}} source={{uri:this.state.lastRequestProfilePic}} >                  
+                            <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'}}>
+                                 <Text style={{color:theme.colors.white, fontSize:25,fontWeight:'bold'}}> +{this.state.WaitingRequestMatch} </Text>
+                            </View>
+                      </ImageBackground> 
+                   </TouchableOpacity>):(null)}
+                     <StoryContainer/>
+
+          
     </ScrollView>
+   
     )
   }
 
   renderRow = ({item}) =>{
-    console.log("item",item);
-return <TouchableOpacity activeOpacity={15} onPress={() => Actions.privateRoom({friend: item}) }>
+return <TouchableOpacity activeOpacity={15} onPress={() => Actions.privateRoom({friend: item,title:item.name,picture:item.photoURL}) }>
         <View style={styles.profileContainer}>
             <Image source={{ uri: item.photoURL }} style={styles.profileImage}/>
             <Text style={styles.profileName}>{item.name}</Text>
             <Text style={styles.profileName}>{item.LastMessage}</Text>
         </View>       
     </TouchableOpacity>
-
-         /*   this.props.matches.map((matches,i) => {
-              var Matches = [];
-              let data ={
-                  method: 'POST',
-                  body: JSON.stringify({
-                    uid: this.props.user.uid,
-                    muid: matches.ID
-                  }),
-                  headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                  }
-              }
-              return fetch('http://ffa1.lovesvan.com/api/get/lastMessages',data)
-              .then(response => response.json()) //promise
-              .then((json) =>{
-                
-                  json.lastMessage.map((message,i)=>{
-                        console.log(message.LastMessage);
-                  })
-    
-              }).catch((error) =>{
-                  console.log(error);
-              });
-          })*/
   }
 
-/*
-  render() {
-    const { pop, counter } = Actions;
-    const {matches} = this.props;
-    return (
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={this.state.refreshing}
-            onRefresh={this._onRefresh}
-          />
-        }>
-         <View style={styles.container}>  
-         {matches.map((matches,i)=>(
-                                                      <Text key={i}>{matches.ID}</Text>
-                                            ))}
-             <Button onPress={pop} title="< Back to Home" />
-          </View>
-      </ScrollView>
-    );
-  }
-}
-*/
 
 render() {
   return (
@@ -304,9 +284,11 @@ render() {
             onRefresh={this._onRefresh}
           />
         }>
-           {this.renderPremiumStories()}
-      <View style={styles.container}>
     
+      <View style={styles.container}>
+      <Text style={[styles.myFriends,{fontWeight:'bold',fontSize:16,paddingLeft:10}]}>Your soulmates</Text>
+        
+           {this.renderPremiumStories()}
           <View style={styles.topGroup}>
               <Text style={styles.myFriends}>Your </Text>
               <TouchableOpacity>

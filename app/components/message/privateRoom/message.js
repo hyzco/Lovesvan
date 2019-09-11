@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text,StyleSheet,KeyboardAvoidingView,Platform,TextInput,Dimensions  } from 'react-native';
+import { View, Text,StyleSheet,KeyboardAvoidingView,Platform,TextInput,Dimensions,Linking  } from 'react-native';
 import { connect } from 'react-redux';
 //import { styles } from '../styles';
 
@@ -8,6 +8,7 @@ import firebaseService from '@firebase/app';
 import KeyboardSpacer from 'react-native-keyboard-spacer';
 import md5 from '../../../enviroments/lib/md5'
 import Icons from 'react-native-vector-icons/Ionicons';
+import { Actions } from 'react-native-router-flux';
 
 const LOVESVANPINK = "#af01b4";
 const LIGHT_GRAY = "#D3D3D3";
@@ -179,6 +180,15 @@ handleBlur = event => {
   }
 };
 
+parsePatterns = linkStyle => {
+  return [
+    {
+      pattern: /#(\w+)/,
+      style: { textDecorationLine: 'underline', color: 'blue' },
+      onPress: () => Linking.openURL('http://gifted.chat'),
+    },
+  ]
+}
 
 
 renderInputToolbar(props){
@@ -227,10 +237,11 @@ render() {
         alwaysShowSend
         renderBubble={this.renderBubble}
         renderSend={this.renderSend}
+        parsePatterns={this.parsePatterns}
         isAnimated
         loadEarlier
         isLoadingEarlier
-   //     renderInputToolbar={this.renderInputToolbar}
+      // renderInputToolbar={this.renderInputToolbar}
         renderFooter={this.renderFooter}
           messages={this.state.messages}
           onSend={this.onSend.bind(this)}
@@ -238,7 +249,7 @@ render() {
               _id: this.user.uid,
           }}
           />
-            {Platform.OS==="android" ? <KeyboardAvoidingView behavior={'padding'}  disabled/>:null}
+            {Platform.OS==="android" ? <KeyboardAvoidingView behavior={'padding'} keyboardVerticalOffset={95}  disabled/>:null}
           </View>
   );
 }

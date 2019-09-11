@@ -4,6 +4,7 @@ import { Scene, Router } from 'react-native-router-flux';
 import { connect, Provider } from 'react-redux';
 import {
   Image,
+  Alert
 } from 'react-native';
 
 //import HomeContainer from './../home';
@@ -33,6 +34,7 @@ import LoadingContainer from './../loading/';
 import configureStore from '../../store';
 import Icons from 'react-native-vector-icons/FontAwesome';
 
+import StoryContainer from './../story/StoryContainer';
 
 import FetchFeed from './../map/screen/FetchFeed';
 
@@ -52,6 +54,9 @@ const iconProfile = () => (
 
 
 export default class Routes extends React.Component {
+  constructor(props){
+    super(props);
+}
   render() {
     return (
       <Provider store={store}>
@@ -70,18 +75,20 @@ export default class Routes extends React.Component {
               <Scene key ="Step5" hideNavBar={false} component={Step5WizardContainer} title="Be Happy !"/>
 
             <Scene key ="FetchFeed" hideNavBar={true} component={FetchFeed} initial={false} title="Feed"/>
+            <Scene key="Story" hideNavBar={true} component={StoryContainer} initial={false} title="Story"/>
 
 
             <Scene  key="welcome" component={WelcomeContainer} title="welcome"/>
             <Scene key="loading" component={LoadingContainer} title="Loading"  initial={true}   />
 
-            <Scene key="privateRoom" component={PrivateRoomContainer} title="PrivateRoom"  />
+            <Scene key="privateRoom" hideNavBar={false} component={PrivateRoomContainer} title={this.props.title} />
            {/*} <Scene key="home" component={HomeContainer} title="Home" />*/}
 
             <Scene key="settings" hideNavBar={false} component={SettingsContainer} title="Settings"  />
 
+
               <Scene key="home"  tabs tabBarStyle={{backgroundColor:"#ffffff"}} showLabel={false}>               
-                          <Scene  key="messages"  icon={iconMessages} component={MessageContainer}  title="Messages"  />                                  
+                          <Scene  key="messages"  icon={iconMessages} component={MessageContainer} onBack={()=>{alert("test")}} back={true}  title="Messages"  />                                  
                           <Scene hideNavBar={true}  key="home"  icon={iconMain} component={HomeContainer} title="Map" initial/>          
                           <Scene hideNavBar={false} key="profile" icon={iconProfile} component={ProfileContainer} title="Profile" />
               </Scene>

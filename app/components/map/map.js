@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import { View,Text,Image,StyleSheet,Dimensions,Animated,ScrollView } from 'react-native';
+import { Text,Image,StyleSheet,Dimensions,ScrollView } from 'react-native';
 import { connect } from 'react-redux';
 import { styles,mapStyle } from './style';
 import { Actions } from 'react-native-router-flux';
-import { logoutUser } from '../../actions/session/actions';
 
 import MapView, {ProviderPropType,AnimatedRegion, Marker,PROVIDER_GOOGLE } from 'react-native-maps';
 import theme from './screen/theme'
@@ -13,13 +12,18 @@ import {LocationDialog} from '../map/screen/LocationModal';
 import DownSlidingPanel from './screen/DownSlidingPanel';
 import TopPanelOnMap from './screen/TopPanelOnMap';
 import {Block} from 'galio-framework';
-import Icons from 'react-native-vector-icons/FontAwesome';
-import {_getFetchBackgroundLocationAsync} from '../../backgroundTask/map/backgroundTasks'
-import { SliderBox } from 'react-native-image-slider-box';
 import {Profile} from './screen/Profile';
 import Modal from 'react-native-modal';
+import { AddMark } from '../../actions/maps/actions';
+
+const io = require('socket.io-client');
+const SOCKET_URL = 'http://ffa1.lovesvan.com:3000';
+const socket = io(SOCKET_URL, {
+  transports: ['websocket'],
+});
 
 const screen = Dimensions.get('window');
+
 
 
 const ASPECT_RATIO = screen.width / screen.height;
@@ -65,10 +69,15 @@ class Map extends React.Component {
           setTimeout(this.refresh.bind(this), 1000)
       }
       
-      componentWillUnmount(){
-        this.updateLocationChange();
-      }
+      realTimeUpdateMarker(uid){
+        socket.emit('setMarkerRequest',{filter:null,pref:null});
+        socket.on('getMarkerData', (data)=>{
+          console.log("socketio",data);
+          this.props.setMark(data);
+        })
+    }
 
+    
       _setMap(ref) {
         this.map = ref
       }
@@ -135,6 +144,7 @@ class Map extends React.Component {
                 this.isUpdate = true;
               }
               console.log("testUpdateLocation OK");
+              this.realTimeUpdateMarker();
               this.updateMarkLocationChange(this.props.user.uid);
               });
          }
@@ -221,15 +231,15 @@ class Map extends React.Component {
         const { refreshing } = this.state;
 
         return (
-           <View style={styles.container}>
-                <LocationDialog isTrue={locationServiceStatus} />
+           <Block style={styles.container}>
+          {/*}     <LocationDialog isTrue={locationServiceStatus} />*/}
 
                 <Block style={stylesModal.container}>            
                     <Modal
                         isVisible={this.state.visibleModal === 'userRenderModal'}
                         onBackdropPress={() => this.setState({visibleModal: null})}
                         onBackButtonPress={()=>this.setState({visibleModal: null})}>
-                        <View style={stylesModal.content} onLayout={this.onLayout}>
+                        <Block style={stylesModal.content} onLayout={this.onLayout}>
                         <ScrollView style={{flex:1,width:this.state.widthImageBox}} showsVerticalScrollIndicator={false}>
                       
                       
@@ -237,7 +247,7 @@ class Map extends React.Component {
 
 
                         </ScrollView>
-                        </View>
+                        </Block>
                     </Modal>
               </Block>
 
@@ -294,38 +304,31 @@ class Map extends React.Component {
                              </MapView.Marker> 
                           );
                         }
-                        /*else if(mark.m_uid == this.props.user.uid){
-                          console.log("map.js",this.state.coordinate);
-                          return(   
-                          <Marker.Animated
-                          ref={marker => { this.marker = marker; }}
-                          coordinate={{
-                            latitude : mark.m_latitude,
-                            longitude:mark.m_longitude ,
-                          }}
-                          key ={mark.m_uid}
-                          title={this.props.user.uid}
-                          description={this.props.user.email}
-                          pinColor ={'#ff00c2'}
-                        />
-                        );
-                        }*/
-
+                    
                       })
                      
                   }
          
-           </MapView>     
-           <View  style={{
+           </MapView> 
+
+           <Block  style={{
             position: 'absolute',//use absolute position to show button on top of the map
-            top: '6%', //for center align
+            top: '5%', //for center align
             alignSelf: 'center' //for align to right
         }}>
            <TopPanelOnMap userData={this.state.userData} userID={firebaseService.auth().currentUser}/>
-        </View>
-             <DownSlidingPanel matches={matches}/>
+        </Block>
+
+            <Block  style={{
+            position: 'absolute',//use absolute position to show button on top of the map
+            top: '100%', //for center align
+            alignSelf: 'center' //for align to right
+        }}>
+             <DownSlidingPanel />
+          </Block>
+           
       
-          </View>
+          </Block>
         );
       }
 }
@@ -342,8 +345,7 @@ class Map extends React.Component {
             });
 
             const mapDispatchToProps = {
-              logout: logoutUser,
-
+              setMark: AddMark
             };
 
 

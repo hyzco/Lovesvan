@@ -176,7 +176,7 @@ class DownSlidingPanel extends Component {
       width,
     },
     panel: {
-      flex: 1,
+   //   flex: 1,
       backgroundColor: 'white',
       borderTopLeftRadius: theme.SIZES.BASE * 2.5,
       borderTopRightRadius: theme.SIZES.BASE * 2.5,
