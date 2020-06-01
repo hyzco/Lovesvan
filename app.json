@@ -24,13 +24,13 @@
       "supportsTablet": true,
 	   "bundleIdentifier": "com.hyzcode.lovesvan",
 	    "config": {
-    "googleMapsApiKey": "AIzaSyCz3wsQs1KW0OLYBEbYexs97BUpAx5I69c"
+    "googleMapsApiKey": "xxxxx"
   }
     },
     "android": {
       "package": "com.hyzcode.lovesvan",
 	   "config": {
-      "googleMaps": { "apiKey": "AIzaSyCz3wsQs1KW0OLYBEbYexs97BUpAx5I69c" }   
+      "googleMaps": { "apiKey": "xxxx" }   
    }
     }
   }
